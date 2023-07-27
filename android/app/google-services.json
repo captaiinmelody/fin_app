@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "887180827198",
+    "project_id": "fin-app-v1-44109",
+    "storage_bucket": "fin-app-v1-44109.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887180827198:android:4420aec1023f6d3aaf8f6f",
+        "android_client_info": {
+          "package_name": "com.example.fin_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "887180827198-o2jnsth5eepj4dg4bjr2jhnsimsjel4m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9978Rs3uvNc7FaP7jovoAYbAkWSnenWk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "887180827198-o2jnsth5eepj4dg4bjr2jhnsimsjel4m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "887180827198-hmlf1nap8s1r76un627u2eqe2oj9tuao.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.finApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
