@@ -39,7 +39,7 @@ class _LoginPageScreenState extends State<LoginPageScreen> {
     if (isTokenExist) {
       // ignore: use_build_context_synchronously
       if (isAdmin.role == 'admin') {
-        GoRouter.of(context).goNamed(MyRouterConstant.adminHomeRouterName);
+        GoRouter.of(context).goNamed(MyRouterConstant.homeRouterName);
       } else {
         GoRouter.of(context).goNamed(MyRouterConstant.homeRouterName);
       }
@@ -118,7 +118,7 @@ class _LoginPageScreenState extends State<LoginPageScreen> {
                       emailController!.clear();
                       passwordController!.clear();
                       GoRouter.of(context)
-                          .goNamed(MyRouterConstant.adminHomeRouterName);
+                          .goNamed(MyRouterConstant.homeRouterName);
                     } else if (state is LoginError) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

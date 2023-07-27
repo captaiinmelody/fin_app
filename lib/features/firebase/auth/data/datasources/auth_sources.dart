@@ -44,7 +44,7 @@ class AuthRepository {
     throw AuthException();
   }
 
-  Future<UserModel?> register(
+  Future<String?> register(
     String email,
     String password,
     UserResponseModels userResponseModels,
@@ -57,17 +57,25 @@ class AuthRepository {
 
       final user = userCredential.user;
       final userId = user!.uid;
-      final token = await user.getIdToken();
 
-      final userResponseModelsWithUserId =
-          userResponseModels.copyWith(userId: userId);
+      final newUserResponseModels = userResponseModels.copyWith(
+        userId: userId,
+        badges: 0,
+        totalReports: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        isAdmin: false,
+        bio: '',
+        birthDate: null,
+        profilePhotoUrl: null,
+      );
 
       await firestore
           .collection('users')
           .doc(userId)
-          .set(userResponseModelsWithUserId.toMap());
+          .set(newUserResponseModels.toMap());
 
-      return UserModel(user.uid, user.email!, token);
+      return "Registration account success! you casn now log in";
     } catch (e) {
       log('Error registering user: $e');
       throw e.toString();

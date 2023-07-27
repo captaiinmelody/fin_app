@@ -15,6 +15,7 @@ class UserResponseModels {
   final bool? isAdmin;
   final String? profilePhotoUrl;
   final int? badges;
+  final int? totalReports;
 
   const UserResponseModels({
     this.userId,
@@ -27,6 +28,7 @@ class UserResponseModels {
     this.isAdmin,
     this.profilePhotoUrl,
     this.badges,
+    this.totalReports,
   });
 
   factory UserResponseModels.fromMap(Map<String, dynamic> data) {
@@ -41,6 +43,7 @@ class UserResponseModels {
       isAdmin: data['isAdmin'] as bool?,
       profilePhotoUrl: data['profilePhotoUrl'] as String?,
       badges: data['badges'] as int?,
+      totalReports: data['totalReports'] as int?,
     );
   }
 
@@ -55,6 +58,7 @@ class UserResponseModels {
         'isAdmin': isAdmin,
         'profilePhotoUrl': profilePhotoUrl,
         'badges': badges,
+        'totalReports': totalReports,
       };
 
   /// `dart:convert`
@@ -76,11 +80,12 @@ class UserResponseModels {
     String? email,
     String? bio,
     DateTime? birthDate,
-    DateTime? cratedAt,
+    DateTime? createdAt,
     DateTime? updatedAt,
     bool? isAdmin,
     String? profilePhotoUrl,
     int? badges,
+    int? totalReports,
   }) {
     return UserResponseModels(
       userId: userId ?? this.userId,
@@ -88,11 +93,12 @@ class UserResponseModels {
       email: email ?? this.email,
       bio: bio ?? this.bio,
       birthDate: birthDate ?? this.birthDate,
-      cratedAt: cratedAt ?? this.cratedAt,
+      cratedAt: createdAt ?? this.cratedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isAdmin: isAdmin ?? this.isAdmin,
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       badges: badges ?? this.badges,
+      totalReports: totalReports ?? this.totalReports,
     );
   }
 

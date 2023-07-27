@@ -1,3 +1,4 @@
+import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/constant/text_styles.dart';
 import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/components/custom_app_bar.dart';
@@ -33,11 +34,43 @@ class _ProfilePageState extends State<ProfilePage> {
                   margin: const EdgeInsets.symmetric(vertical: 12),
                   child: Stack(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: const Icon(Icons.person),
+                      Positioned(
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: Container(
+                            color: Colors.grey.withOpacity(0.8),
+                            child: const Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
-                      const Positioned(bottom: 0, right: 0, child: ClipRRect())
+                      Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50),
+                            child: InkWell(
+                              splashColor: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () {},
+                              child: Container(
+                                color: AppColors.secondaryColor,
+                                padding: const EdgeInsets.all(8),
+                                child: const Icon(
+                                  Icons.edit_outlined,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ))
                     ],
                   ),
                 ),
@@ -107,8 +140,8 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('../../../assets/logout_modal.png'),
-            const SizedBox(height: 24.0),
+            // Image.asset('../../../../../assets/logout_modal.png'),
+            // const SizedBox(height: 24.0),
             const Text(
               'Logout Account?',
               style: TextStyle(

@@ -1,12 +1,15 @@
 import 'package:fin_app/features/firebase/auth/bloc/auth_bloc.dart';
 import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/firebase/auth/pages/login_page.dart';
-import 'package:fin_app/features/firebase/auth/data/repo/auth_repo.dart';
+import 'package:fin_app/features/firebase/auth/data/datasources/auth_sources.dart';
 import 'package:fin_app/features/firebase/auth/pages/register_page.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
+import 'package:fin_app/features/root/data/datasources/leaderboards_sources.dart';
 import 'package:fin_app/features/root/data/datasources/report_sources.dart';
 import 'package:fin_app/features/root/root_page.dart';
 import 'package:fin_app/features/root/ui/home/pages/home_page.dart';
+import 'package:fin_app/features/root/ui/leaderboards/pages/leaderboards_page.dart';
+import 'package:fin_app/features/root/ui/my_reports/pages/my_reports_page.dart';
 import 'package:fin_app/features/root/ui/profile/profile_page.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_const.dart';
@@ -23,7 +26,9 @@ final AuthRepository _authRepository = AuthRepository();
 final AuthBloc authBloc = AuthBloc(_authRepository);
 
 final ReportsDataSources reportsDataSources = ReportsDataSources();
-final RootBloc rootBloc = RootBloc(reportsDataSources);
+final LeaderboardSources leaderboardSources = LeaderboardSources();
+
+final RootBloc rootBloc = RootBloc(reportsDataSources, leaderboardSources);
 
 class MyRouter {
   static GoRouter router = GoRouter(
@@ -76,6 +81,20 @@ class MyRouter {
               },
             ),
             GoRoute(
+              name: MyRouterConstant.myReportsRouterName,
+              path: '/my-reports',
+              pageBuilder: (context, state) {
+                return const MaterialPage(child: MyReportsPage());
+              },
+            ),
+            GoRoute(
+              name: MyRouterConstant.leaderboardsRouterName,
+              path: '/leaderboards',
+              pageBuilder: (context, state) {
+                return const MaterialPage(child: LeaderboardsPage());
+              },
+            ),
+            GoRoute(
               name: MyRouterConstant.reportsRouterName,
               path: '/reports',
               pageBuilder: (context, state) {
@@ -97,24 +116,28 @@ class MyRouter {
       //root redirect
       final isHomeLocation = state.matchedLocation == '/home';
       final isProfileLocation = state.matchedLocation == '/profile';
+      final isMyReportsLocation = state.matchedLocation == '/my-reports';
+      final isLeaderboardsLocation = state.matchedLocation == '/leaderboards';
 
       if (isLogedIn) {
         if (isHomeLocation) {
           return '/home';
         } else if (isProfileLocation) {
           return '/profile';
+        } else if (isMyReportsLocation) {
+          return '/my-reports';
+        } else if (isLeaderboardsLocation) {
+          return '/leaderboards';
         }
-        return '/home';
-      } else if (!isLogedIn) {
+        return '/home'; // Default redirect for logged-in users
+      } else {
         if (isGoingToLogin) {
           return '/login';
         } else if (isGoingToRegister) {
           return '/register';
         }
-        return '/login';
+        return '/login'; // Default redirect for non-logged-in users
       }
-
-      return null;
     },
     errorPageBuilder: (context, state) {
       return const MaterialPage(

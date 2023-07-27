@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -55,8 +56,23 @@ class ReportsDataSources {
           await firestore.collection('users').doc(userId).get();
 
       if (userSnapshot.exists) {
+        //username fetch from users collection
         String username = userSnapshot.get("username");
         final updatedReports = reports.copyWith(username: username);
+
+        //badges fetch from users collection
+        int currentBadges = userSnapshot.get('badges') ?? 0;
+        int newBadges = currentBadges + 1;
+
+        //totalReports fetch from users collection
+        int currentTotalReports = userSnapshot.get('totalReports') ?? 0;
+        int newTotalReports = currentTotalReports + 1;
+
+        await firestore.collection('users').doc(userId).update({
+          'badges': newBadges,
+          'totalReports': newTotalReports,
+          'updatedAt': DateTime.now(),
+        });
 
         await firestore
             .collection('reports')
@@ -106,6 +122,29 @@ class ReportsDataSources {
       return reportsModels;
     } catch (e) {
       print('Error fetching ReportsModels: $e');
+      throw Exception("Failed to fetch ReportsModels");
+    }
+  }
+
+  Future<List<ReportsModels>> getReportsByUserId() async {
+    try {
+      final userId = await AuthLocalStorage().getUserId();
+
+      final QuerySnapshot snapshot = await firestore
+          .collection('reports')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final List<ReportsModels> reportsModels = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return ReportsModels.fromMap(data);
+      }).toList();
+
+      return reportsModels;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching ReportsModels: $e');
+      }
       throw Exception("Failed to fetch ReportsModels");
     }
   }

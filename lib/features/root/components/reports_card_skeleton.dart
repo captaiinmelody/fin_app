@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class Skeleton extends StatefulWidget {
-  const Skeleton({super.key});
+class ReportsCardSkeleton extends StatefulWidget {
+  const ReportsCardSkeleton({super.key});
 
   @override
-  State<Skeleton> createState() => _SkeletonState();
+  State<ReportsCardSkeleton> createState() => _ReportsCardSkeletonState();
 }
 
-class _SkeletonState extends State<Skeleton> {
+class _ReportsCardSkeletonState extends State<ReportsCardSkeleton> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -24,29 +24,43 @@ class _SkeletonState extends State<Skeleton> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(width: 120, height: 24, color: Colors.grey),
-                    Container(width: 120, height: 24, color: Colors.grey)
+                    skeletonItems(width: 120, height: 24),
+                    skeletonItems(width: 120, height: 24),
                   ],
                 ),
                 const SizedBox(height: 24.0),
-                Container(width: 270, height: 24, color: Colors.grey),
+                skeletonItems(width: 270, height: 24),
                 const SizedBox(height: 8.0),
-                Container(width: 270, height: 200, color: Colors.grey),
+                skeletonItems(width: 270, height: 200),
                 const SizedBox(height: 8.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Container(width: 96, height: 24, color: Colors.grey),
-                    Container(width: 96, height: 24, color: Colors.grey),
-                    Container(width: 96, height: 24, color: Colors.grey),
+                    skeletonItems(width: 72, height: 24),
+                    skeletonItems(width: 72, height: 24),
+                    skeletonItems(width: 72, height: 24),
                   ],
                 ),
                 const SizedBox(height: 24.0),
-                Container(width: 96, height: 24, color: Colors.grey)
+                skeletonItems(width: 72, height: 24),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Container skeletonItems({
+    double? width,
+    double? height,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey,
+        borderRadius: BorderRadius.circular(12),
       ),
     );
   }

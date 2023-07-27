@@ -3,25 +3,25 @@ import 'package:fin_app/features/root/components/display_media.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-class ContentCard extends StatelessWidget {
+class ReportsCard extends StatelessWidget {
   final String? userProfileImage;
   final String? username;
   final int? totalLikes;
   final int? totalComments;
-  final String? content;
   final DateTime? datePublished;
+  final String? reportsDescription;
   final String? imageUrl;
   final String? videoUrl;
   final int? status;
 
-  const ContentCard({
+  const ReportsCard({
     Key? key,
     this.userProfileImage,
     this.username,
     this.totalLikes,
     this.totalComments,
-    this.content,
     this.datePublished,
+    this.reportsDescription,
     this.imageUrl,
     this.videoUrl,
     this.status,
@@ -99,7 +99,7 @@ class ContentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 24.0),
                 Text(
-                  content ?? 'tidak ada data',
+                  reportsDescription ?? 'tidak ada data',
                   style: const TextStyle(fontSize: 16.0),
                 ),
                 const SizedBox(height: 8.0),

@@ -15,9 +15,11 @@ class LoadingState extends RootState {
 class LoadedState extends RootState {
   final String? response;
   final List<ReportsModels>? reportsModels;
+  final List<UserResponseModels>? userResponseModels;
   LoadedState({
     this.response,
     this.reportsModels,
+    this.userResponseModels,
   });
 }
 

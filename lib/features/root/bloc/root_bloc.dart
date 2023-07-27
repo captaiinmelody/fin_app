@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:fin_app/features/firebase/auth/data/models/response/user_response_models.dart';
+import 'package:fin_app/features/root/data/datasources/leaderboards_sources.dart';
 import 'package:fin_app/features/root/data/datasources/report_sources.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +12,9 @@ part 'root_state.dart';
 
 class RootBloc extends Bloc<RootEvent, RootState> {
   ReportsDataSources reportsDataSources;
-  RootBloc(this.reportsDataSources) : super(InitialState()) {
+  LeaderboardSources leaderboardSources;
+  RootBloc(this.reportsDataSources, this.leaderboardSources)
+      : super(InitialState()) {
     on<HomeEvent>((event, emit) {});
     on<ReportsEventPost>((event, emit) async {
       emit(LoadingState());
@@ -55,16 +59,43 @@ class RootBloc extends Bloc<RootEvent, RootState> {
       }
     });
 
-    on<ReportsEventGet>(((event, emit) async {
+    on<ReportsEventGet>(
+      ((event, emit) async {
+        emit(LoadingState());
+        try {
+          final result = await reportsDataSources.getReports();
+
+          emit(LoadedState(reportsModels: result));
+        } catch (e) {
+          emit(ErrorState(message: e.toString()));
+        }
+      }),
+    );
+
+    on<ReportsEventGetByUserId>(((event, emit) async {
       emit(LoadingState());
       try {
-        final result = await reportsDataSources.getReports();
+        final result = await reportsDataSources.getReportsByUserId();
 
         emit(LoadedState(reportsModels: result));
       } catch (e) {
         emit(ErrorState(message: e.toString()));
       }
     }));
+
+    on<LeaderboardsEvent>(
+      ((event, emit) async {
+        emit(LoadingState());
+
+        try {
+          final response = await leaderboardSources.getUsers();
+
+          emit(LoadedState(userResponseModels: response));
+        } catch (e) {
+          emit(ErrorState(message: e.toString()));
+        }
+      }),
+    );
 
     on<ProfileEvent>((event, emit) {});
   }

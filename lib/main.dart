@@ -6,9 +6,8 @@ import 'package:fin_app/features/auth/bloc/registration/registration_bloc.dart';
 import 'package:fin_app/features/auth/data/dataresources/auth_datasources.dart';
 import 'package:fin_app/features/auth/data/dataresources/product_datasources.dart';
 import 'package:fin_app/features/firebase/auth/bloc/auth_bloc.dart';
-import 'package:fin_app/features/firebase/auth/data/repo/auth_repo.dart';
+import 'package:fin_app/features/firebase/auth/data/datasources/auth_sources.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
-import 'package:fin_app/features/root/data/datasources/report_sources.dart';
 import 'package:fin_app/firebase_options.dart';
 import 'package:fin_app/routes/route_config.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -38,7 +37,11 @@ class MainApp extends StatelessWidget {
         BlocProvider(
             create: (context) => CreateProductBloc(ProductDataSources())),
         BlocProvider(create: (context) => AuthBloc(AuthRepository())),
-        BlocProvider(create: (context) => RootBloc(ReportsDataSources()))
+        BlocProvider(
+            create: (context) => RootBloc(
+                  reportsDataSources,
+                  leaderboardSources,
+                ))
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

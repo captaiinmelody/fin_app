@@ -16,25 +16,27 @@ class ProfileMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      splashColor: Colors.grey.shade200,
-      borderRadius: BorderRadius.circular(50),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        margin: const EdgeInsets.only(bottom: 24),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: menuColor,
-            ),
-            const SizedBox(width: 24),
-            Text(
-              label,
-              style: TextStyles.normalText.copyWith(color: menuColor),
-            )
-          ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        splashColor: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(50),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: menuColor,
+              ),
+              const SizedBox(width: 24),
+              Text(
+                label,
+                style: TextStyles.normalText.copyWith(color: menuColor),
+              )
+            ],
+          ),
         ),
       ),
     );

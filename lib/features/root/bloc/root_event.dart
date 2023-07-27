@@ -6,6 +6,7 @@ class HomeEvent extends RootEvent {}
 
 class ProfileEvent extends RootEvent {}
 
+//reports event
 class ReportsEventPost extends RootEvent {
   final String? description;
   final File? imageFiles;
@@ -22,3 +23,7 @@ class ReportsEventPost extends RootEvent {
 }
 
 class ReportsEventGet extends RootEvent {}
+
+class ReportsEventGetByUserId extends RootEvent {}
+
+class LeaderboardsEvent extends RootEvent {}

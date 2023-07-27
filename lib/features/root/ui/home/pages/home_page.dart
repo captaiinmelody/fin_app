@@ -2,8 +2,8 @@ import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/constant/text_styles.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
-import 'package:fin_app/features/root/ui/home/components/content_card.dart';
-import 'package:fin_app/features/root/ui/home/components/skeleton.dart';
+import 'package:fin_app/features/root/components/reports_card.dart';
+import 'package:fin_app/features/root/components/reports_card_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return const Column(
                       children: [
-                        Skeleton(),
+                        ReportsCardSkeleton(),
                         Divider(),
                       ],
                     );
@@ -92,9 +92,9 @@ class _HomePageState extends State<HomePage> {
                   ReportsModels content = state.reportsModels![index];
                   return Column(
                     children: [
-                      ContentCard(
+                      ReportsCard(
                         username: content.username,
-                        content: content.description,
+                        reportsDescription: content.description,
                         imageUrl: content.mediaUrl!.imageUrl,
                         videoUrl: content.mediaUrl!.videoUrl,
                         totalLikes: content.totalLikes,

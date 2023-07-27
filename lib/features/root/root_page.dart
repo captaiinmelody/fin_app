@@ -1,7 +1,7 @@
 import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
-import 'package:fin_app/features/root/data/datasources/report_sources.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
+import 'package:fin_app/routes/route_config.dart';
 import 'package:fin_app/routes/route_const.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -16,7 +16,10 @@ class RootPage extends StatefulWidget {
 }
 
 class _RootPageState extends State<RootPage> {
-  final RootBloc rootBloc = RootBloc(ReportsDataSources());
+  final RootBloc rootBloc = RootBloc(
+    reportsDataSources,
+    leaderboardSources,
+  );
 
   List routerName = [
     MyRouterConstant.homeRouterName,
@@ -64,9 +67,10 @@ class _RootPageState extends State<RootPage> {
           size: 32,
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       resizeToAvoidBottomInset: false,
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: calculateSelectedIndex(context),
         onTap: (int index) {
           setState(() => onItemTapped(index, context));
@@ -75,6 +79,14 @@ class _RootPageState extends State<RootPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.report),
+            label: 'My Reports',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'Leaderboards',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -90,8 +102,14 @@ class _RootPageState extends State<RootPage> {
     if (location == '/home') {
       return 0;
     }
-    if (location == '/profile') {
+    if (location == '/my-reports') {
       return 1;
+    }
+    if (location == '/leaderboards') {
+      return 2;
+    }
+    if (location == '/profile') {
+      return 3;
     }
     return 0;
   }
@@ -102,6 +120,12 @@ class _RootPageState extends State<RootPage> {
         GoRouter.of(context).goNamed(MyRouterConstant.homeRouterName);
         break;
       case 1:
+        GoRouter.of(context).goNamed(MyRouterConstant.myReportsRouterName);
+        break;
+      case 2:
+        GoRouter.of(context).goNamed(MyRouterConstant.leaderboardsRouterName);
+        break;
+      case 3:
         GoRouter.of(context).goNamed(MyRouterConstant.profileRouterName);
         break;
     }

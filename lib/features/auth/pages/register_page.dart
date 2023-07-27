@@ -44,7 +44,7 @@ class _RegisterPageScreenState extends State<RegisterPageScreen> {
     if (isTokenExist) {
       // ignore: use_build_context_synchronously
       if (isAdmin.role == 'admin') {
-        GoRouter.of(context).goNamed(MyRouterConstant.adminHomeRouterName);
+        GoRouter.of(context).goNamed(MyRouterConstant.homeRouterName);
       } else {
         GoRouter.of(context).goNamed(MyRouterConstant.homeRouterName);
       }
