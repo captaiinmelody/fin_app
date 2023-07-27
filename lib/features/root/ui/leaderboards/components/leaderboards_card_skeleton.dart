@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class LeaderboardsCards extends StatelessWidget {
+class LeaderboardsCardsSkeleton extends StatelessWidget {
   final String? profilePhoto;
   final String? userName;
   final int? badges;
   final int? totalReports;
-  const LeaderboardsCards({
+  const LeaderboardsCardsSkeleton({
     super.key,
     this.profilePhoto,
     this.userName,

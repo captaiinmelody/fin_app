@@ -22,6 +22,10 @@ final GlobalKey<NavigatorState> adminNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'admin');
 final GlobalKey<NavigatorState> userNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'user');
+
+final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
+    GlobalKey<RefreshIndicatorState>();
+
 final AuthRepository _authRepository = AuthRepository();
 final AuthBloc authBloc = AuthBloc(_authRepository);
 
