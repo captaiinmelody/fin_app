@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
@@ -9,7 +10,7 @@ class UserResponseModels {
   final String? username;
   final String? email;
   final String? bio;
-  final DateTime? birthDate;
+  // final DateTime? birthDate;
   final DateTime? cratedAt;
   final DateTime? updatedAt;
   final bool? isAdmin;
@@ -22,7 +23,7 @@ class UserResponseModels {
     this.username,
     this.email,
     this.bio,
-    this.birthDate,
+    // this.birthDate,
     this.cratedAt,
     this.updatedAt,
     this.isAdmin,
@@ -31,15 +32,43 @@ class UserResponseModels {
     this.totalReports,
   });
 
+  UserResponseModels copyWith({
+    String? userId,
+    String? username,
+    String? email,
+    String? bio,
+    // DateTime? birthDate,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isAdmin,
+    String? profilePhotoUrl,
+    int? badges,
+    int? totalReports,
+  }) {
+    return UserResponseModels(
+      userId: userId ?? this.userId,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      bio: bio ?? this.bio,
+      // birthDate: birthDate ?? this.birthDate,
+      cratedAt: createdAt ?? this.cratedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isAdmin: isAdmin ?? this.isAdmin,
+      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
+      badges: badges ?? this.badges,
+      totalReports: totalReports ?? this.totalReports,
+    );
+  }
+
   factory UserResponseModels.fromMap(Map<String, dynamic> data) {
     return UserResponseModels(
       userId: data['userId'] as String?,
       username: data['username'] as String?,
       email: data['email'] as String?,
       bio: data['bio'] as String?,
-      birthDate: data['birthDate'] as DateTime?,
-      cratedAt: data['cratedAt'] as DateTime?,
-      updatedAt: data['updatedAt'] as DateTime?,
+      // birthDate: (data['birthDate'] as Timestamp).toDate(),
+      cratedAt: (data['cratedAt'] as Timestamp).toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
       isAdmin: data['isAdmin'] as bool?,
       profilePhotoUrl: data['profilePhotoUrl'] as String?,
       badges: data['badges'] as int?,
@@ -52,7 +81,7 @@ class UserResponseModels {
         'username': username,
         'email': email,
         'bio': bio,
-        'birthDate': birthDate,
+        // 'birthDate': birthDate,
         'cratedAt': cratedAt,
         'updatedAt': updatedAt,
         'isAdmin': isAdmin,
@@ -74,34 +103,6 @@ class UserResponseModels {
   /// Converts [UserResponseModels] to a JSON string.
   String toJson() => json.encode(toMap());
 
-  UserResponseModels copyWith({
-    String? userId,
-    String? username,
-    String? email,
-    String? bio,
-    DateTime? birthDate,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isAdmin,
-    String? profilePhotoUrl,
-    int? badges,
-    int? totalReports,
-  }) {
-    return UserResponseModels(
-      userId: userId ?? this.userId,
-      username: username ?? this.username,
-      email: email ?? this.email,
-      bio: bio ?? this.bio,
-      birthDate: birthDate ?? this.birthDate,
-      cratedAt: createdAt ?? this.cratedAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isAdmin: isAdmin ?? this.isAdmin,
-      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
-      badges: badges ?? this.badges,
-      totalReports: totalReports ?? this.totalReports,
-    );
-  }
-
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
@@ -115,7 +116,7 @@ class UserResponseModels {
       username.hashCode ^
       email.hashCode ^
       bio.hashCode ^
-      birthDate.hashCode ^
+      // birthDate.hashCode ^
       cratedAt.hashCode ^
       updatedAt.hashCode ^
       profilePhotoUrl.hashCode ^

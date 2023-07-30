@@ -4,7 +4,7 @@ abstract class RootEvent {}
 
 class HomeEvent extends RootEvent {}
 
-class ProfileEvent extends RootEvent {}
+class ProfileEventGetUser extends RootEvent {}
 
 //reports event
 class ReportsEventPost extends RootEvent {
@@ -26,4 +26,15 @@ class ReportsEventGet extends RootEvent {}
 
 class ReportsEventGetByUserId extends RootEvent {}
 
+class ReportsEventUpdateCounter extends RootEvent {
+  final String? reportsId;
+  final String? counter;
+  ReportsEventUpdateCounter({
+    this.reportsId,
+    this.counter,
+  });
+}
+
 class LeaderboardsEvent extends RootEvent {}
+
+class LeaderboardsEventGetByUserId extends RootEvent {}

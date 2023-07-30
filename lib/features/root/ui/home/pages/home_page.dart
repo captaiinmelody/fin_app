@@ -1,6 +1,7 @@
-import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/constant/text_styles.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
+import 'package:fin_app/features/root/components/hideable_app_bar.dart';
+import 'package:fin_app/features/root/data/localstorage/root_local_storage.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:fin_app/features/root/components/reports_card.dart';
 import 'package:fin_app/features/root/components/reports_card_skeleton.dart';
@@ -9,7 +10,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final RootBloc rootBloc;
+  const HomePage({super.key, required this.rootBloc});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -36,33 +38,9 @@ class _HomePageState extends State<HomePage> {
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
-            SliverAppBar(
-              pinned: false,
-              floating: true,
-              snap: true,
-              backgroundColor: AppColors.primaryColor,
-              actions: [
-                IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.search,
-                      size: 36,
-                      color: Colors.white,
-                    ))
-              ],
-              centerTitle: true,
-              expandedHeight: 80,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(12),
-                      bottomRight: Radius.circular(12))),
-              flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(bottom: 24),
-                  centerTitle: true,
-                  title: Text("Home",
-                      style:
-                          TextStyles.titleText.copyWith(color: Colors.white))),
-            ),
+            HideableAppBar(
+                child: Text('Home',
+                    style: TextStyles.titleText.copyWith(color: Colors.white))),
           ];
         },
         body: RefreshIndicator(
@@ -87,20 +65,52 @@ class _HomePageState extends State<HomePage> {
               );
             } else if (state is LoadedState) {
               return ListView.builder(
-                itemCount: state.reportsModels!.length,
+                itemCount: state.listOfReportsModels!.length,
                 itemBuilder: (context, index) {
-                  ReportsModels content = state.reportsModels![index];
+                  ReportsModels content = state.listOfReportsModels![index];
+                  int totalLikes = content.totalLikes!;
+                  int totalComments = content.totalComments!;
+                  String reportsId = content.reportsId!;
+                  state.listOfReportsModels?.sort(
+                      (a, b) => b.datePublished!.compareTo(a.datePublished!));
                   return Column(
                     children: [
                       ReportsCard(
                         username: content.username,
+                        location: content.kampus,
+                        detailLocation: content.detailLokasi,
                         reportsDescription: content.description,
                         imageUrl: content.mediaUrl!.imageUrl,
                         videoUrl: content.mediaUrl!.videoUrl,
-                        totalLikes: content.totalLikes,
-                        totalComments: content.totalComments,
+                        totalLikes: totalLikes,
+                        totalComments: totalComments,
                         datePublished: content.datePublished,
                         status: content.status,
+                        onLikeTap: () async {
+                          bool currentIsAlreadyLiking =
+                              await RootLocalStorgae().getIsAlreadyLiking();
+                          setState(() {
+                            if (currentIsAlreadyLiking == false) {
+                              currentIsAlreadyLiking = true;
+
+                              RootLocalStorgae()
+                                  .saveIsAlreadyLiking(currentIsAlreadyLiking);
+
+                              totalLikes = content.totalLikes! + 1;
+                              widget.rootBloc.add(ReportsEventUpdateCounter(
+                                  reportsId: reportsId, counter: 'totalLikes'));
+                            }
+                          });
+                        },
+                        onCommentTap: () {
+                          setState(() {
+                            totalComments = content.totalComments! + 1;
+                            widget.rootBloc.add(ReportsEventUpdateCounter(
+                                reportsId: reportsId,
+                                counter: 'totalComments'));
+                          });
+                        },
+                        isHomePage: true,
                       ),
                       const Divider(),
                     ],

@@ -66,7 +66,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '887180827198',
     projectId: 'fin-app-v1-44109',
     storageBucket: 'fin-app-v1-44109.appspot.com',
-    iosClientId: '887180827198-hmlf1nap8s1r76un627u2eqe2oj9tuao.apps.googleusercontent.com',
+    iosClientId:
+        '887180827198-hmlf1nap8s1r76un627u2eqe2oj9tuao.apps.googleusercontent.com',
     iosBundleId: 'com.example.finApp',
   );
 
@@ -76,7 +77,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '887180827198',
     projectId: 'fin-app-v1-44109',
     storageBucket: 'fin-app-v1-44109.appspot.com',
-    iosClientId: '887180827198-qfom1lu4pq1n42m5n9bovugsgilisd25.apps.googleusercontent.com',
+    iosClientId:
+        '887180827198-qfom1lu4pq1n42m5n9bovugsgilisd25.apps.googleusercontent.com',
     iosBundleId: 'com.example.finApp.RunnerTests',
   );
 }

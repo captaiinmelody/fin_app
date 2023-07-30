@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
+import 'package:fin_app/features/root/data/models/leaderboards_models.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -37,6 +38,7 @@ class ReportsDataSources {
       }
 
       String reportsId = const Uuid().v1();
+      String leaderboardsId = const Uuid().v1();
       final userId = await AuthLocalStorage().getUserId();
 
       ReportsModels reports = ReportsModels(
@@ -68,6 +70,9 @@ class ReportsDataSources {
         int currentTotalReports = userSnapshot.get('totalReports') ?? 0;
         int newTotalReports = currentTotalReports + 1;
 
+        //fetching profile photo url from users
+        String? profilePhotoUrl = userSnapshot.get('profilePhotoUrl');
+
         await firestore.collection('users').doc(userId).update({
           'badges': newBadges,
           'totalReports': newTotalReports,
@@ -79,13 +84,66 @@ class ReportsDataSources {
             .doc(reportsId)
             .set(updatedReports.toMap());
 
-        return 'success';
+        //leaderboards models
+        LeaderboardsModels leaderboards = LeaderboardsModels(
+          leaderboardsId: leaderboardsId,
+          userId: userId,
+          profilePhotoUrl: profilePhotoUrl ?? "",
+          username: username,
+          totalReports: newTotalReports,
+          badges: newBadges,
+        );
+
+        //get leaderboard for checkin if there is already userId in the leaderboards collection
+        DocumentSnapshot leaderboardsSnapshot =
+            await firestore.collection('leaderboards').doc(userId).get();
+
+        //post to leaderboards collection
+        if (leaderboardsSnapshot.exists) {
+          await firestore.collection('leaderboards').doc(userId).update({
+            'badges': newBadges,
+            'totalReports': newTotalReports,
+          });
+        } else {
+          await firestore
+              .collection('leaderboards')
+              .doc(userId)
+              .set(leaderboards.toMap());
+        }
+
+        return 'Upload Success';
       } else {
         return 'User document not found';
       }
     } catch (e) {
-      return e.toString(); // Return error message as String
+      throw e.toString(); // Return error message as String
     }
+  }
+
+  Future<int> updateInt(String reportsId, String counter) async {
+    final userId = await AuthLocalStorage().getUserId();
+
+    DocumentSnapshot getReports =
+        await firestore.collection('reports').doc(reportsId).get();
+    final currentCounter = getReports.get(counter);
+    final newCounter = currentCounter + 1;
+
+    DocumentSnapshot getLeaderboards =
+        await firestore.collection('leaderboards').doc(userId).get();
+    final currentBadges = getLeaderboards.get('badges');
+    final newBadges = currentBadges + 1;
+
+    await firestore
+        .collection('reports')
+        .doc(reportsId)
+        .update({counter: newCounter});
+
+    await firestore
+        .collection('leaderboards')
+        .doc(userId)
+        .update({'badges': newBadges});
+
+    return newCounter;
   }
 
   Future<String> uploadFile(File file) async {
@@ -119,6 +177,10 @@ class ReportsDataSources {
         return ReportsModels.fromMap(data);
       }).toList();
 
+      // Sort the reportsModels list by the newest datePublished
+      reportsModels
+          .sort((a, b) => b.datePublished!.compareTo(a.datePublished!));
+
       return reportsModels;
     } catch (e) {
       print('Error fetching ReportsModels: $e');
@@ -139,6 +201,10 @@ class ReportsDataSources {
         final data = doc.data() as Map<String, dynamic>;
         return ReportsModels.fromMap(data);
       }).toList();
+
+      // Sort the reportsModels list by the newest datePublished
+      reportsModels
+          .sort((a, b) => b.datePublished!.compareTo(a.datePublished!));
 
       return reportsModels;
     } catch (e) {

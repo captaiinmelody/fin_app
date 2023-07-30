@@ -44,7 +44,7 @@ class AuthRepository {
     throw AuthException();
   }
 
-  Future<String?> register(
+  Future<bool> register(
     String email,
     String password,
     UserResponseModels userResponseModels,
@@ -58,26 +58,59 @@ class AuthRepository {
       final user = userCredential.user;
       final userId = user!.uid;
 
-      final newUserResponseModels = userResponseModels.copyWith(
-        userId: userId,
-        badges: 0,
-        totalReports: 0,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isAdmin: false,
-        bio: '',
-        birthDate: null,
-        profilePhotoUrl: null,
-      );
+      final usernameExists =
+          await checkUsernameExists(userResponseModels.username!);
 
-      await firestore
-          .collection('users')
-          .doc(userId)
-          .set(newUserResponseModels.toMap());
+      if (!usernameExists) {
+        // Username already exists, so return an error message
+        final newUserResponseModels = userResponseModels.copyWith(
+          userId: userId,
+          badges: 0,
+          totalReports: 0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isAdmin: false,
+          bio: '',
+          profilePhotoUrl:
+              'https://upload.wikimedia.org/wikipedia/commons/b/bc/Unknown_person.jpg',
+        );
 
-      return "Registration account success! you casn now log in";
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .set(newUserResponseModels.toMap());
+      } else {
+        return false;
+      }
+
+      return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw AuthException(
+            message:
+                'Email already in use. Please change your username and try again.');
+      } else {
+        throw AuthException(
+            message:
+                'Register failed. Please try again.'); // For other Firebase exceptions
+      }
     } catch (e) {
       log('Error registering user: $e');
+      throw e.toString();
+    }
+  }
+
+  Future<bool> checkUsernameExists(String username) async {
+    try {
+      final querySnapshot = await firestore
+          .collection('users')
+          .where('username', isEqualTo: username)
+          .limit(1)
+          .get();
+
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      log('Error checking username existence: $e');
       throw e.toString();
     }
   }

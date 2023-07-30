@@ -54,7 +54,7 @@ class _DisplayMediaState extends State<DisplayMedia> {
                   url: widget.imageUrl!,
                   dataSourceType: widget.dataSourceType!,
                 ),
-              if (widget.videoUrl != null || widget.videoUrl != '')
+              if (widget.videoUrl != null && widget.videoUrl != '')
                 VideoPlayerView(
                   url: widget.videoUrl!,
                   dataSourceType: widget.dataSourceType!,
@@ -64,8 +64,10 @@ class _DisplayMediaState extends State<DisplayMedia> {
               setState(() {}); // Update the page indicator
             },
           ),
-          if (widget.imageUrl != null && widget.imageUrl != '' ||
-              widget.videoUrl != null && widget.videoUrl == '')
+          if (widget.imageUrl != null &&
+              widget.imageUrl != '' &&
+              widget.videoUrl != null &&
+              widget.videoUrl != '')
             Positioned(
               left: 0,
               right: 0,

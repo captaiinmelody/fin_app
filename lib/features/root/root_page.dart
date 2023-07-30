@@ -19,6 +19,7 @@ class _RootPageState extends State<RootPage> {
   final RootBloc rootBloc = RootBloc(
     reportsDataSources,
     leaderboardSources,
+    profileDataSources,
   );
 
   List routerName = [
@@ -63,7 +64,7 @@ class _RootPageState extends State<RootPage> {
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         child: const Icon(
-          Icons.camera_alt_rounded,
+          Icons.report_sharp,
           size: 32,
         ),
       ),

@@ -14,11 +14,29 @@ class LoadingState extends RootState {
 
 class LoadedState extends RootState {
   final String? response;
-  final List<ReportsModels>? reportsModels;
-  final List<UserResponseModels>? userResponseModels;
+  final List<ReportsModels>? listOfReportsModels;
+  final int? counter;
+
   LoadedState({
     this.response,
-    this.reportsModels,
+    this.listOfReportsModels,
+    this.counter,
+  });
+}
+
+class LeaderboardsLoadedState extends RootState {
+  final List<LeaderboardsModels>? listOfLeaderboardsModels;
+  final LeaderboardsModels? leaderboardsModels;
+  LeaderboardsLoadedState({
+    this.listOfLeaderboardsModels,
+    this.leaderboardsModels,
+  });
+}
+
+class ProfileLoadedState extends RootState {
+  final UserResponseModels? userResponseModels;
+
+  ProfileLoadedState({
     this.userResponseModels,
   });
 }

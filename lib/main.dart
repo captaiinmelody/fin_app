@@ -41,6 +41,7 @@ class MainApp extends StatelessWidget {
             create: (context) => RootBloc(
                   reportsDataSources,
                   leaderboardSources,
+                  profileDataSources,
                 ))
       ],
       child: MaterialApp.router(

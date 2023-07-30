@@ -3,16 +3,22 @@ import 'package:fin_app/features/root/components/display_media.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+@immutable
 class ReportsCard extends StatelessWidget {
-  final String? userProfileImage;
-  final String? username;
+  final String? userProfileImage,
+      username,
+      location,
+      detailLocation,
+      reportsDescription,
+      imageUrl,
+      videoUrl;
   final int? totalLikes;
   final int? totalComments;
   final DateTime? datePublished;
-  final String? reportsDescription;
-  final String? imageUrl;
-  final String? videoUrl;
   final int? status;
+  final bool isHomePage;
+
+  final Function()? onLikeTap, onCommentTap;
 
   const ReportsCard({
     Key? key,
@@ -21,10 +27,15 @@ class ReportsCard extends StatelessWidget {
     this.totalLikes,
     this.totalComments,
     this.datePublished,
+    this.location,
+    this.detailLocation,
     this.reportsDescription,
     this.imageUrl,
     this.videoUrl,
     this.status,
+    this.onLikeTap,
+    this.onCommentTap,
+    required this.isHomePage,
   }) : super(key: key);
 
   String getFormattedTimeSince(DateTime dateTime) {
@@ -43,6 +54,8 @@ class ReportsCard extends StatelessWidget {
       return '${difference.inSeconds} second(s) ago';
     }
   }
+
+  static const isAlreadyLiking = true;
 
   @override
   Widget build(BuildContext context) {
@@ -63,12 +76,39 @@ class ReportsCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      username ?? 'tidak ada data',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.0,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "@${username!.toLowerCase()}",
+                          style: const TextStyle(
+                            fontSize: 18.0,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 14,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              child: Text(
+                                "${location!.toLowerCase()} | ${detailLocation!.toLowerCase()}",
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14.0,
+                                ),
+                                maxLines: 2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -109,32 +149,44 @@ class ReportsCard extends StatelessWidget {
                   dataSourceType: DataSourceType.network,
                 ),
                 const SizedBox(height: 8.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.favorite, color: Colors.red),
-                        const SizedBox(width: 4.0),
-                        Text(totalLikes.toString()),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Icon(Icons.share, color: Colors.green),
-                        const SizedBox(width: 4.0),
-                        Text(totalLikes.toString()),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Icon(Icons.comment, color: Colors.blue),
-                        const SizedBox(width: 4.0),
-                        Text(totalComments.toString()),
-                      ],
-                    ),
-                  ],
-                ),
+                if (isHomePage)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: onLikeTap,
+                            splashColor: Colors.grey.withOpacity(0.25),
+                            child: isAlreadyLiking
+                                ? const Icon(Icons.favorite, color: Colors.red)
+                                : const Icon(Icons.favorite_outline,
+                                    color: Colors.red),
+                          ),
+                          const SizedBox(width: 4.0),
+                          Text(totalLikes.toString()),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.share, color: Colors.green),
+                          const SizedBox(width: 4.0),
+                          Text(totalLikes.toString()),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          InkWell(
+                              onTap: onCommentTap,
+                              splashColor: Colors.grey.withOpacity(0.25),
+                              child: const Icon(Icons.comment,
+                                  color: Colors.blue)),
+                          const SizedBox(width: 4.0),
+                          Text(totalComments.toString()),
+                        ],
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 24.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -25,6 +25,11 @@ class AuthLocalStorage {
     return pref.getString('token')!;
   }
 
+  Future<String> getUserId() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.getString("userId")!;
+  }
+
   Future<bool> isTokenExist() async {
     final pref = await SharedPreferences.getInstance();
     return pref.getString('token') != null;

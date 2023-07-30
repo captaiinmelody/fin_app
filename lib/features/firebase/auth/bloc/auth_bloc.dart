@@ -97,7 +97,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                   username: event.username,
                   email: event.email,
                 ));
-            emit(RegistrationCompleteState(response!));
+            if (response) {
+              emit(RegistrationCompleteState(
+                  "Registered success! You can login now."));
+            } else {
+              emit(ErrorState(
+                  message: "Username already exist, try different one"));
+            }
           } catch (e) {
             emit(ErrorState(message: e.toString()));
           }
@@ -119,7 +125,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 }
-
 
 //   Stream<AuthState> mapEventToState(AuthEvent event) async* {
 //     if (event is LoginEvent) {

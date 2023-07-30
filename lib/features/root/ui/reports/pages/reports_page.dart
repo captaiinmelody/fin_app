@@ -203,9 +203,9 @@ class _ReportsPageState extends State<ReportsPage> {
             listener: (context, state) {
               if (state is LoadedState) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                       backgroundColor: Colors.green,
-                      content: Text('Upload success')),
+                      content: Text(state.response.toString())),
                 );
                 setState(() {
                   imageFiles = null;
