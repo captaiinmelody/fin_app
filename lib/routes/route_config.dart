@@ -1,16 +1,17 @@
-import 'package:fin_app/features/firebase/auth/bloc/auth_bloc.dart';
+import 'package:fin_app/features/auth/bloc/auth_bloc.dart';
+import 'package:fin_app/features/auth/pages/login_page.dart';
+import 'package:fin_app/features/auth/pages/register_page.dart';
 import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
-import 'package:fin_app/features/firebase/auth/pages/login_page.dart';
 import 'package:fin_app/features/firebase/auth/data/datasources/auth_sources.dart';
-import 'package:fin_app/features/firebase/auth/pages/register_page.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
+import 'package:fin_app/features/root/data/datasources/admin_reports_sources.dart';
 import 'package:fin_app/features/root/data/datasources/leaderboards_sources.dart';
 import 'package:fin_app/features/root/data/datasources/profile_sources.dart';
 import 'package:fin_app/features/root/data/datasources/report_sources.dart';
 import 'package:fin_app/features/root/root_page.dart';
 import 'package:fin_app/features/root/ui/home/pages/home_page.dart';
 import 'package:fin_app/features/root/ui/leaderboards/pages/leaderboards_page.dart';
-import 'package:fin_app/features/root/ui/my_reports/pages/my_reports_page.dart';
+import 'package:fin_app/features/root/ui/my_reports/pages/users/my_reports_page.dart';
 import 'package:fin_app/features/root/ui/profile/pages/profile_page.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_const.dart';
@@ -30,12 +31,14 @@ final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
 final AuthRepository _authRepository = AuthRepository();
 final AuthBloc authBloc = AuthBloc(_authRepository);
 
+final AdminReportsDataSources adminReportsDataSources =
+    AdminReportsDataSources();
 final ReportsDataSources reportsDataSources = ReportsDataSources();
 final LeaderboardSources leaderboardSources = LeaderboardSources();
 final ProfileDataSources profileDataSources = ProfileDataSources();
 
-final RootBloc rootBloc =
-    RootBloc(reportsDataSources, leaderboardSources, profileDataSources);
+final RootBloc rootBloc = RootBloc(adminReportsDataSources, reportsDataSources,
+    leaderboardSources, profileDataSources);
 
 class MyRouter {
   static GoRouter router = GoRouter(
@@ -91,7 +94,7 @@ class MyRouter {
               name: MyRouterConstant.myReportsRouterName,
               path: '/my-reports',
               pageBuilder: (context, state) {
-                return const MaterialPage(child: MyReportsPage());
+                return MaterialPage(child: MyReportsPage(rootBloc: rootBloc));
               },
             ),
             GoRoute(

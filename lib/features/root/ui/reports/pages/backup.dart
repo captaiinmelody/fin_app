@@ -3,66 +3,187 @@
 
 // import 'package:file_picker/file_picker.dart';
 // import 'package:fin_app/constant/color.dart';
-// import 'package:fin_app/features/reports/bloc/reports_bloc.dart';
-// import 'package:fin_app/routes/route_const.dart';
+// import 'package:fin_app/features/firebase/auth/components/auth_input_components.dart';
+// import 'package:fin_app/features/root/bloc/root_bloc.dart';
+// import 'package:fin_app/features/root/components/image_view.dart';
+// import 'package:fin_app/features/root/components/video_player_view.dart';
+// import 'package:fin_app/features/root/ui/reports/components/button_media.dart';
+// import 'package:fin_app/features/root/ui/reports/components/campus_selection.dart';
+// import 'package:flutter/foundation.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:flutter_image_compress/flutter_image_compress.dart';
 // import 'package:go_router/go_router.dart';
+// import 'package:image_picker/image_picker.dart';
 // import 'package:loading_animation_widget/loading_animation_widget.dart';
+// import 'package:video_player/video_player.dart';
+// // import 'package:path_provider/path_provider.dart' as p;
 
 // class ReportsPage extends StatefulWidget {
-//   const ReportsPage({super.key});
+//   final RootBloc rootBloc;
+//   final bool isAdmin;
+//   const ReportsPage({
+//     Key? key,
+//     required this.rootBloc,
+//     this.isAdmin = false,
+//   }) : super(key: key);
 
 //   @override
 //   State<ReportsPage> createState() => _ReportsPageState();
 // }
 
 // class _ReportsPageState extends State<ReportsPage> {
-//   int start = 10;
-//   late Timer timer;
-//   PlatformFile? pickedFile;
+//   final ImagePicker picker = ImagePicker();
+
+//   File? imageFiles;
+//   File? videoFiles;
+//   PlatformFile? profilePhoto;
+//   String? selectedDropdownItem;
+
+//   int currentPage = 0;
+
+//   double? heightPhoto;
+//   double? widthPhoto;
 
 //   TextEditingController descriptionController = TextEditingController();
+//   TextEditingController locationDetailController = TextEditingController();
+//   PageController pageController = PageController(initialPage: 0);
 
-//   void startTimer() {
-//     const oneSec = Duration(seconds: 1);
-//     timer = Timer.periodic(
-//       oneSec,
-//       (Timer timer) {
-//         if (start == 0) {
-//           setState(() {
-//             timer.cancel();
-
-//             GoRouter.of(context).goNamed(MyRouterConstant.adminHomeRouterName);
-//           });
-//         } else {
-//           setState(() {
-//             start--;
-//           });
-//         }
-//       },
+//   Future<void> selectVideo() async {
+//     final result = await FilePicker.platform.pickFiles(
+//       allowMultiple: false,
+//       type: FileType.video,
+//       allowCompression: true,
 //     );
-//   }
 
-//   Future selectFile() async {
-//     final result = await FilePicker.platform
-//         .pickFiles(allowMultiple: false, type: FileType.any);
 //     if (result == null) return;
 
+//     final selectedFile = File(result.files.single.path!);
+
+//     final videoPlayerController = VideoPlayerController.file(selectedFile);
+//     await videoPlayerController.initialize();
+//     final duration = videoPlayerController.value.duration;
+//     await videoPlayerController.dispose();
+
+//     // Limit video duration to 1 minute (60 seconds)
+//     const maxDurationInSeconds = 60;
+
+//     if (duration.inSeconds <= maxDurationInSeconds) {
+//       setState(() {
+//         videoFiles = selectedFile;
+//       });
+//     } else {
+//       // Show the error message outside the method using a custom SnackBar
+//       showVideoDurationError();
+//     }
+//   }
+
+//   void showVideoDurationError() {
+//     const snackBar = SnackBar(
+//       backgroundColor: Colors.red,
+//       content: Text('Selected video exceeds the maximum duration of 1 minute.'),
+//     );
+
+//     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+//   }
+
+//   Future<void> recordVideoFromCamera() async {
+//     final pickedFile = await picker.pickVideo(
+//         source: ImageSource.camera, maxDuration: const Duration(minutes: 1));
+//     if (pickedFile == null) return;
+
+//     final videoFile = File(pickedFile.path);
 //     setState(() {
-//       pickedFile = result.files.single;
+//       videoFiles = videoFile;
 //     });
 //   }
 
-//   Future<void> clearImage() async {
+//   Future<void> pickImageFromCamera() async {
+//     final pickedFile =
+//         await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
+//     if (pickedFile == null) return;
+
+//     final imageFile = await compressImage(File(pickedFile.path));
+
 //     setState(() {
-//       pickedFile = null;
+//       imageFiles = imageFile;
+//     });
+//   }
+
+//   Future<void> selectImage() async {
+//     final result = await FilePicker.platform.pickFiles(
+//       allowMultiple: false,
+//       type: FileType.image,
+//       allowCompression: true,
+//     );
+
+//     if (result == null) return;
+
+//     final selectedFile = File(result.files.single.path!);
+
+//     if (selectedFile.existsSync()) {
+//       print('Selected image file path: ${selectedFile.path}');
+//       final compressedImage = await compressImage(selectedFile);
+
+//       if (compressedImage != null) {
+//         setState(() {
+//           imageFiles = compressedImage;
+//         });
+//       } else {
+//         print('Image compression failed');
+//       }
+//     } else {
+//       print('Selected image file does not exist: ${selectedFile.path}');
+//     }
+//   }
+
+//   Future<File?> compressImage(File imageFile) async {
+//     try {
+//       final bytes = await imageFile.readAsBytes();
+
+//       final kb = bytes.length / 1024;
+//       final mb = kb / 1024;
+
+//       if (kDebugMode) {
+//         print('original file size $mb');
+//       }
+
+//       final compressedData = await FlutterImageCompress.compressWithFile(
+//         imageFile.path,
+//         quality: 30, // Set the image quality (0 to 100)
+//       );
+
+//       // Create a new File with the compressed data and return it
+//       final compressedImage = File(imageFile.path)
+//         ..writeAsBytesSync(compressedData!);
+
+//       final data = await compressedImage.readAsBytes();
+//       final newKb = data.length / 1024;
+//       final newMb = newKb / 1024;
+
+//       if (kDebugMode) {
+//         print('compressed image size: $newMb');
+//       }
+//       return compressedImage;
+//     } catch (e) {
+//       print('Error compressing image: $e');
+//       return null;
+//     }
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     pageController.addListener(() {
+//       setState(() {
+//         currentPage = pageController.page!.round();
+//       });
 //     });
 //   }
 
 //   @override
 //   void dispose() {
-//     timer.cancel();
+//     pageController.dispose();
 //     super.dispose();
 //   }
 
@@ -71,216 +192,205 @@
 //     Size size = MediaQuery.of(context).size;
 //     return Scaffold(
 //       backgroundColor: Colors.white,
-//       appBar: AppBar(
-//         actions: [ElevatedButton(onPressed: () {}, child: Container())],
-//         leading: IconButton(
-//           onPressed: () {
-//             GoRouter.of(context).pop();
-//           },
-//           icon: const Icon(Icons.close, size: 36),
-//         ),
-//       ),
-//       body: Column(
-//         children: [
-//           SingleChildScrollView(
-//             child: Center(
-//                 child: pickedFile == null
-//                     ? Column(
-//                         children: [
-//                           const Icon(
-//                             Icons.image_outlined,
-//                             size: 300,
-//                           ),
-//                           const SizedBox(height: 50),
-//                           ElevatedButton(
-//                             style: ElevatedButton.styleFrom(
-//                                 backgroundColor: AppColors.primaryColor,
-//                                 fixedSize: Size(size.width * 0.5, 50),
-//                                 shape: RoundedRectangleBorder(
-//                                     borderRadius: BorderRadius.circular(12))),
-//                             onPressed: () {},
-//                             child: const Text(
-//                               "Select an image",
-//                               style: TextStyle(
-//                                 color: Colors.white,
-//                               ),
-//                             ),
-//                           ),
-//                         ],
-//                       )
-//                     : Column(
-//                         children: [
-//                           Container(
-//                             color: Colors.lightBlue,
-//                             child: Image.file(
-//                               File(pickedFile!.path!),
-//                               width: double.infinity,
-//                               height: 350,
-//                               fit: BoxFit.fitHeight,
-//                             ),
-//                           ),
-//                           const SizedBox(height: 50),
-//                           TextField(
-//                             controller: descriptionController,
-//                             maxLines: null,
-//                             keyboardType: TextInputType.multiline,
-//                             decoration: InputDecoration(
-//                               labelText: 'Enter description',
-//                               border: OutlineInputBorder(
-//                                   borderRadius: BorderRadius.circular(12)),
-//                               focusedErrorBorder: OutlineInputBorder(
-//                                 borderSide: const BorderSide(
-//                                     color: Colors
-//                                         .red), // Set the filled border color
-//                                 borderRadius: BorderRadius.circular(12),
-//                               ),
-//                             ),
-//                           ),
-//                           const SizedBox(height: 24),
-//                           BlocConsumer<ReportsBloc, ReportsState>(
-//                             listener: (context, state) {
-//                               if (state is ReportsLoaded) {
-//                                 setState(() {
-//                                   pickedFile = null;
-//                                 });
-//                                 ScaffoldMessenger.of(context).showSnackBar(
-//                                   const SnackBar(
-//                                       backgroundColor: Colors.green,
-//                                       content: Text('Upload success')),
-//                                 );
-//                                 startTimer();
-//                               } else if (state is ReportsError) {
-//                                 ScaffoldMessenger.of(context).showSnackBar(
-//                                   SnackBar(
-//                                       backgroundColor: Colors.redAccent,
-//                                       content: Text(state.message)),
-//                                 );
-//                               }
-//                             },
-//                             builder: (context, state) {
-//                               if (state is ReportsLoading) {
-//                                 return Center(
-//                                   child: LoadingAnimationWidget.prograssiveDots(
-//                                     size: double.infinity,
-//                                     color: AppColors.secondaryColor,
-//                                   ),
-//                                 );
-//                               }
-//                               return ElevatedButton(
-//                                 style: ElevatedButton.styleFrom(
-//                                     backgroundColor: AppColors.primaryColor,
-//                                     fixedSize: Size(size.width * 0.5, 50),
-//                                     shape: RoundedRectangleBorder(
-//                                         borderRadius:
-//                                             BorderRadius.circular(12))),
-//                                 onPressed: () async {
-//                                   // context.read<ReportsBloc>().add(
-//                                   //     ReportsPostEvent(
-//                                   //         description:
-//                                   //             descriptionController.text,
-//                                   //         fileName: pickedFile!.name,
-//                                   //         filePath: pickedFile!.path!));
-//                                 },
-//                                 child: const Text(
-//                                   "Upload",
-//                                   style: TextStyle(color: Colors.white),
-//                                 ),
-//                               );
-//                             },
-//                           ),
-//                         ],
-//                       )),
-//           ),
-//         ],
-//       ),
-//       bottomSheet: Container(
-//         height: 60,
-//         color: Colors.grey,
-//         child: Container(
-//           height: 50,
-//           width: double.infinity,
-//           margin: const EdgeInsets.only(top: 2),
-//           color: Colors.white,
-//           child: Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-//             child: Row(
-//               crossAxisAlignment: CrossAxisAlignment.center,
-//               children: [
-//                 IconButton(
-//                   onPressed: () {
-//                     selectFile();
-//                   },
-//                   icon: const Icon(Icons.image_outlined),
-//                   color: AppColors.primaryColor,
-//                 )
-//               ],
-//             ),
+//       appBar: customAppBar(context),
+//       body: usersView(size),
+//     );
+//   }
+
+//   AppBar customAppBar(BuildContext context) {
+//     return AppBar(
+//       actions: [
+//         Container(
+//           margin: const EdgeInsets.only(right: 16),
+//           child: BlocConsumer<RootBloc, RootState>(
+//             bloc: widget.rootBloc,
+//             listener: (context, state) {
+//               if (state is LoadedState) {
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   SnackBar(
+//                       backgroundColor: Colors.green,
+//                       content: Text(state.response.toString())),
+//                 );
+//                 setState(() {
+//                   imageFiles = null;
+//                   videoFiles = null;
+//                 });
+
+//                 GoRouter.of(context).pop();
+//               } else if (state is ErrorState) {
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   SnackBar(
+//                       backgroundColor: Colors.redAccent,
+//                       content: Text(state.message)),
+//                 );
+//               }
+//             },
+//             builder: (context, state) {
+//               if (state is LoadingState) {
+//                 return Center(
+//                   child: LoadingAnimationWidget.horizontalRotatingDots(
+//                       color: AppColors.primaryColor, size: 20),
+//                 );
+//               }
+//               return ElevatedButton(
+//                 onPressed: () {
+//                   widget.rootBloc.add(ReportsEventPost(
+//                     description: descriptionController.text,
+//                     imageFiles: imageFiles,
+//                     videoFiles: videoFiles,
+//                     kampus: selectedDropdownItem,
+//                     detailLokasi: locationDetailController.text,
+//                   ));
+//                 },
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: AppColors.primaryColor,
+//                 ),
+//                 child: const Text(
+//                   'Report',
+//                   style: TextStyle(color: Colors.white),
+//                 ),
+//               );
+//             },
 //           ),
 //         ),
+//       ],
+//       leading: IconButton(
+//         onPressed: () {
+//           GoRouter.of(context).pop();
+//         },
+//         icon: const Icon(Icons.close, size: 36),
 //       ),
 //     );
 //   }
 
-//   // void postImage() async {
-//   //   setState(() {
-//   //     _isLoading = true;
-//   //   });
+//   usersView(Size size) {
+//     return SingleChildScrollView(
+//       physics: const BouncingScrollPhysics(),
+//       child: Column(
+//         children: [
+//           Padding(
+//             padding: const EdgeInsets.all(20.0),
+//             child: Container(
+//               padding: const EdgeInsets.symmetric(horizontal: 20),
+//               width: size.width,
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   TextField(
+//                     controller: descriptionController,
+//                     maxLines: null,
+//                     decoration: const InputDecoration(
+//                       border: InputBorder.none,
+//                       hintText: 'Enter some description...',
+//                     ),
+//                   ),
+//                   if (imageFiles != null || videoFiles != null)
+//                     displayMedia()
+//                   else
+//                     const Text(
+//                       "Image or Video is required...",
+//                       style: TextStyle(color: Colors.redAccent),
+//                     ),
+//                   const SizedBox(height: 24),
+//                   ButtonMedia(onSelectImageTap: () {
+//                     selectImage();
+//                   }, onSelectVideoTap: () {
+//                     selectVideo();
+//                   }, onTakeImageTap: () async {
+//                     pickImageFromCamera();
+//                   }, onTakeVideoTap: () async {
+//                     recordVideoFromCamera();
+//                   }),
+//                   CampusSelection(
+//                     isEnabled: false,
+//                     onChanged: (selectedValue) {
+//                       setState(() {
+//                         selectedDropdownItem = selectedValue;
+//                       });
+//                     },
+//                   ),
+//                   Container(
+//                     margin: const EdgeInsets.only(top: 12),
+//                     child: AuthForm(
+//                       controller: locationDetailController,
+//                       labelText: 'Location details...',
+//                       prefixIcon: const Icon(Icons.location_on_outlined),
+//                     ),
+//                   )
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 
-//   //   try {
-//   //     String res = await ImageStoreMethod()
-//   //         .uploadReports(descriptionController.text, _file);
-//   //     if (res == 'success') {
-//   //       setState(() {
-//   //         _isLoading = false;
-//   //       });
-//   //       ScaffoldMessenger.of(context).showSnackBar(
-//   //         const SnackBar(
-//   //             backgroundColor: Colors.blue, content: Text('Success')),
-//   //       );
-//   //       clearImage();
-//   //     } else {
-//   //       setState(() {
-//   //         _isLoading = false;
-//   //       });
-//   //       ScaffoldMessenger.of(context).showSnackBar(
-//   //         SnackBar(backgroundColor: Colors.redAccent, content: Text(res)),
-//   //       );
-//   //     }
-//   //   } catch (e) {
-//   //     print(e.toString());
-//   //   }
-//   // }
+//   Widget displayMedia() {
+//     return Container(
+//       height: 200,
+//       margin: const EdgeInsets.only(bottom: 12),
+//       child: Stack(
+//         children: [
+//           PageView(
+//             controller: pageController,
+//             children: [
+//               if (imageFiles != null)
+//                 ImageView(
+//                   url: imageFiles!.path,
+//                   dataSourceType: DataSourceType.file,
+//                   onPressed: () {
+//                     setState(() {
+//                       imageFiles = null;
+//                     });
+//                   },
+//                 ),
+//               if (videoFiles != null)
+//                 VideoPlayerView(
+//                   url: videoFiles!.path,
+//                   dataSourceType: DataSourceType.file,
+//                   onPressed: () {
+//                     setState(() {
+//                       videoFiles = null;
+//                     });
+//                   },
+//                 ),
+//             ],
+//             onPageChanged: (index) {
+//               setState(() {}); // Update the page indicator
+//             },
+//           ),
+//           if (imageFiles != null && videoFiles != null)
+//             Positioned(
+//               left: 0,
+//               right: 0,
+//               bottom: 10,
+//               child: Row(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: buildPageIndicator(),
+//               ),
+//             ),
+//         ],
+//       ),
+//     );
+//   }
 
-//   // imageSelector(context) {
-//   //   return showDialog(
-//   //     context: context,
-//   //     builder: (context) {
-//   //       return SimpleDialog(
-//   //         title: const Text('Select an image'),
-//   //         children: [
-//   //           SimpleDialogOption(
-//   //             onPressed: () async {
-//   //               GoRouter.of(context).pop();
-//   //               Uint8List file = await pickImage(ImageSource.camera);
-//   //               setState(() {
-//   //                 _file = file;
-//   //               });
-//   //             },
-//   //             child: const Text("Take a photo"),
-//   //           ),
-//   //           SimpleDialogOption(
-//   //             onPressed: () async {
-//   //               GoRouter.of(context).pop();
-//   //               Uint8List file = await pickImage(ImageSource.gallery);
-//   //               setState(() {
-//   //                 _file = file;
-//   //               });
-//   //             },
-//   //             child: const Text("Choose from gallery"),
-//   //           )
-//   //         ],
-//   //       );
-//   //     },
-//   //   );
-//   // }
+//   List<Widget> buildPageIndicator() {
+//     List<Widget> indicators = [];
+
+//     for (int i = 0; i < 2; i++) {
+//       indicators.add(
+//         Container(
+//           width: 8.0,
+//           height: 8.0,
+//           margin: const EdgeInsets.symmetric(horizontal: 4.0),
+//           decoration: BoxDecoration(
+//             shape: BoxShape.circle,
+//             color: i == currentPage ? AppColors.primaryColor : Colors.black45,
+//           ),
+//         ),
+//       );
+//     }
+//     return indicators;
+//   }
 // }

@@ -1,3 +1,4 @@
+import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/constant/text_styles.dart';
 import 'package:fin_app/features/auth/bloc/auth_bloc.dart';
 import 'package:fin_app/features/auth/components/auth_input_components.dart';
@@ -9,39 +10,32 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
-class RegisterPage extends StatefulWidget {
+class LoginPage extends StatefulWidget {
   final AuthBloc authBloc;
-  const RegisterPage({super.key, required this.authBloc});
+  const LoginPage({super.key, required this.authBloc});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  late bool isPassword = true;
-  late bool isConfirmPassword = true;
-
-  TextEditingController? usernameController;
+class _LoginPageState extends State<LoginPage> {
+  late bool isObscureText = true;
   TextEditingController? emailController;
   TextEditingController? passwordController;
-  TextEditingController? confPasswordController;
 
   @override
   void initState() {
-    usernameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
-    confPasswordController = TextEditingController();
+
     super.initState();
   }
 
   @override
   void dispose() {
     super.dispose();
-    usernameController!.dispose();
     emailController!.dispose();
     passwordController!.dispose();
-    confPasswordController!.dispose();
   }
 
   @override
@@ -58,20 +52,14 @@ class _RegisterPageState extends State<RegisterPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Register",
+              "Login",
               style: TextStyles.titleText,
             ),
             Text(
-              "Welcome to FIN APP. Please enter your account information to Register",
+              "Welcome to FIN APP. Please enter your account information to log in",
               style: TextStyles.smallText.copyWith(),
             ),
             const SizedBox(height: 50),
-            AuthForm(
-              controller: usernameController,
-              labelText: "Username",
-              prefixIcon: const Icon(Icons.person_outline),
-            ),
-            const SizedBox(height: 24),
             AuthForm(
               controller: emailController,
               labelText: "Email",
@@ -82,33 +70,28 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: passwordController,
               labelText: "Password",
               prefixIcon: const Icon(Icons.lock_outline),
-              obscureText: isPassword,
+              obscureText: isObscureText,
               suffixIcon: GestureDetector(
                 onTap: () {
                   setState(() {
-                    isPassword = !isPassword;
+                    isObscureText = !isObscureText;
                   });
                 },
-                child: isPassword
+                child: isObscureText
                     ? const Icon(Icons.visibility_outlined)
                     : const Icon(Icons.visibility_off_outlined),
               ),
             ),
-            const SizedBox(height: 24),
-            AuthForm(
-              controller: confPasswordController,
-              labelText: "Confirm Password",
-              prefixIcon: const Icon(Icons.lock_outline),
-              obscureText: isConfirmPassword,
-              suffixIcon: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isConfirmPassword = !isConfirmPassword;
-                  });
-                },
-                child: isConfirmPassword
-                    ? const Icon(Icons.visibility_outlined)
-                    : const Icon(Icons.visibility_off_outlined),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () {
+                GoRouter.of(context)
+                    .goNamed(MyRouterConstant.forgotPasswordRouterName);
+              },
+              child: Text(
+                "Forgot Password?",
+                style: TextStyles.normalText
+                    .copyWith(color: AppColors.primaryColor),
               ),
             ),
             const SizedBox(height: 80),
@@ -117,18 +100,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 BlocConsumer<AuthBloc, AuthState>(
                   bloc: widget.authBloc,
                   listener: (context, state) {
-                    if (state is RegistrationCompleteState) {
-                      usernameController!.clear();
-                      emailController!.clear();
-                      passwordController!.clear();
-                      confPasswordController!.clear();
-
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          backgroundColor: Colors.green,
-                          content: Text(state.successMessage)));
-
-                      GoRouter.of(context)
-                          .goNamed(MyRouterConstant.loginRouterName);
+                    if (state is AuthenticatedState) {
+                      setState(() {
+                        emailController!.clear();
+                        passwordController!.clear();
+                        GoRouter.of(context)
+                            .goNamed(MyRouterConstant.homeRouterName);
+                      });
                     } else if (state is ErrorState) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           backgroundColor: Colors.redAccent,
@@ -143,24 +121,22 @@ class _RegisterPageState extends State<RegisterPage> {
                       );
                     }
                     return AuthButton(
-                        textButton: "Register",
+                        textButton: "Login",
                         onTap: () {
-                          widget.authBloc.add(RegisterEvent(
-                            email: emailController!.text,
-                            password: passwordController!.text,
-                            username: usernameController!.text,
-                            confPassword: confPasswordController!.text,
+                          widget.authBloc.add(LoginEvent(
+                            emailController!.text,
+                            passwordController!.text,
                           ));
                         });
                   },
                 ),
                 const SizedBox(height: 12),
                 QuestionText(
-                  questionText: "Already have an account?",
-                  answerText: "Login",
+                  questionText: "Don't have an account?",
+                  answerText: "Register",
                   onTap: () {
                     GoRouter.of(context)
-                        .goNamed(MyRouterConstant.loginRouterName);
+                        .goNamed(MyRouterConstant.registerRouterName);
                   },
                 )
               ],

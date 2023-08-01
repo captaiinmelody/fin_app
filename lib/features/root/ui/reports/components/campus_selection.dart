@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 class CampusSelection extends StatefulWidget {
   final Function(String) onChanged;
-
+  final bool isEnabled;
   const CampusSelection({
     super.key,
     required this.onChanged,
+    required this.isEnabled,
   });
 
   @override
@@ -27,6 +28,7 @@ class _CampusSelectionState extends State<CampusSelection> {
     return Container(
       margin: const EdgeInsets.only(top: 24),
       child: DropdownButtonFormField<String>(
+        enableFeedback: widget.isEnabled,
         value: selectedValue,
         items: dropdownItems.map((value) {
           return DropdownMenuItem<String>(

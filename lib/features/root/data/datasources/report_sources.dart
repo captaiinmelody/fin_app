@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
+import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/data/models/leaderboards_models.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -60,7 +60,9 @@ class ReportsDataSources {
       if (userSnapshot.exists) {
         //username fetch from users collection
         String username = userSnapshot.get("username");
-        final updatedReports = reports.copyWith(username: username);
+        String profilePhotoUrl = userSnapshot.get('profilePhotoUrl');
+        final updatedReports = reports.copyWith(
+            username: username, profilePhotoUrl: profilePhotoUrl);
 
         //badges fetch from users collection
         int currentBadges = userSnapshot.get('badges') ?? 0;
@@ -69,9 +71,6 @@ class ReportsDataSources {
         //totalReports fetch from users collection
         int currentTotalReports = userSnapshot.get('totalReports') ?? 0;
         int newTotalReports = currentTotalReports + 1;
-
-        //fetching profile photo url from users
-        String? profilePhotoUrl = userSnapshot.get('profilePhotoUrl');
 
         await firestore.collection('users').doc(userId).update({
           'badges': newBadges,
@@ -88,7 +87,7 @@ class ReportsDataSources {
         LeaderboardsModels leaderboards = LeaderboardsModels(
           leaderboardsId: leaderboardsId,
           userId: userId,
-          profilePhotoUrl: profilePhotoUrl ?? "",
+          profilePhotoUrl: profilePhotoUrl,
           username: username,
           totalReports: newTotalReports,
           badges: newBadges,

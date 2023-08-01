@@ -1,13 +1,15 @@
 import 'package:fin_app/constant/text_styles.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
+import 'package:fin_app/features/root/components/display_image.dart';
 import 'package:fin_app/features/root/components/hideable_app_bar.dart';
-import 'package:fin_app/features/root/data/localstorage/root_local_storage.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:fin_app/features/root/components/reports_card.dart';
 import 'package:fin_app/features/root/components/reports_card_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:video_player/video_player.dart';
 
 class HomePage extends StatefulWidget {
   final RootBloc rootBloc;
@@ -77,29 +79,36 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       ReportsCard(
                         username: content.username,
+                        profilePhotoUrl: content.profilePhotoUrl,
                         location: content.kampus,
                         detailLocation: content.detailLokasi,
                         reportsDescription: content.description,
-                        imageUrl: content.mediaUrl!.imageUrl,
-                        videoUrl: content.mediaUrl!.videoUrl,
+                        imageUrl: content.mediaUrl?.imageUrl,
+                        videoUrl: content.mediaUrl?.videoUrl,
                         totalLikes: totalLikes,
                         totalComments: totalComments,
                         datePublished: content.datePublished,
                         status: content.status,
+                        viewImage: () {
+                          showGeneralDialog(
+                            context: context,
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) {
+                              return DisplayImage(
+                                url: content.mediaUrl!.imageUrl!,
+                                dataSourceType: DataSourceType.network,
+                                onPressed: () {
+                                  GoRouter.of(context).pop();
+                                },
+                              );
+                            },
+                          );
+                        },
                         onLikeTap: () async {
-                          bool currentIsAlreadyLiking =
-                              await RootLocalStorgae().getIsAlreadyLiking();
                           setState(() {
-                            if (currentIsAlreadyLiking == false) {
-                              currentIsAlreadyLiking = true;
-
-                              RootLocalStorgae()
-                                  .saveIsAlreadyLiking(currentIsAlreadyLiking);
-
-                              totalLikes = content.totalLikes! + 1;
-                              widget.rootBloc.add(ReportsEventUpdateCounter(
-                                  reportsId: reportsId, counter: 'totalLikes'));
-                            }
+                            totalLikes = content.totalLikes! + 1;
+                            widget.rootBloc.add(ReportsEventUpdateCounter(
+                                reportsId: reportsId, counter: 'totalLikes'));
                           });
                         },
                         onCommentTap: () {

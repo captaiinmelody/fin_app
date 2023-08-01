@@ -1,6 +1,7 @@
 import 'package:fin_app/constant/color.dart';
-import 'package:fin_app/features/root/components/image_view.dart';
-import 'package:fin_app/features/root/components/video_player_view.dart';
+import 'package:fin_app/features/root/components/display_image.dart';
+import 'package:fin_app/features/root/components/display_video.dart';
+import 'package:fin_app/features/root/components/popup_image.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -40,22 +41,31 @@ class _DisplayMediaState extends State<DisplayMedia> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      width: 270,
-      margin: const EdgeInsets.only(bottom: 12),
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.26,
+      width: MediaQuery.of(context).size.width,
       child: Stack(
         children: [
           PageView(
             controller: pageController,
             children: [
               if (widget.imageUrl != null && widget.imageUrl != '')
-                ImageView(
-                  url: widget.imageUrl!,
-                  dataSourceType: widget.dataSourceType!,
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => PopupImage(
+                        imageUrl: widget.imageUrl,
+                        dataSourceType: widget.dataSourceType,
+                      ),
+                    );
+                  },
+                  child: DisplayImage(
+                      url: widget.imageUrl!,
+                      dataSourceType: widget.dataSourceType!),
                 ),
               if (widget.videoUrl != null && widget.videoUrl != '')
-                VideoPlayerView(
+                DisplayVideo(
                   url: widget.videoUrl!,
                   dataSourceType: widget.dataSourceType!,
                 ),

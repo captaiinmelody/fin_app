@@ -1,11 +1,18 @@
 import 'package:fin_app/constant/color.dart';
+import 'package:fin_app/features/firebase/auth/components/auth_button_component.dart';
+import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/components/display_media.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:video_player/video_player.dart';
 
 @immutable
-class ReportsCard extends StatelessWidget {
-  final String? userProfileImage,
+class ReportsCard extends StatefulWidget {
+  final RootBloc? rootBloc;
+
+  final String? profilePhotoUrl,
+      reportsId,
       username,
       location,
       detailLocation,
@@ -17,12 +24,15 @@ class ReportsCard extends StatelessWidget {
   final DateTime? datePublished;
   final int? status;
   final bool isHomePage;
+  final bool isAdmin;
 
-  final Function()? onLikeTap, onCommentTap;
+  final Function()? onLikeTap, onCommentTap, viewImage;
 
   const ReportsCard({
     Key? key,
-    this.userProfileImage,
+    this.rootBloc,
+    this.profilePhotoUrl,
+    this.reportsId,
     this.username,
     this.totalLikes,
     this.totalComments,
@@ -36,8 +46,17 @@ class ReportsCard extends StatelessWidget {
     this.onLikeTap,
     this.onCommentTap,
     required this.isHomePage,
+    this.isAdmin = false,
+    this.viewImage,
   }) : super(key: key);
 
+  static const isAlreadyLiking = true;
+
+  @override
+  State<ReportsCard> createState() => _ReportsCardState();
+}
+
+class _ReportsCardState extends State<ReportsCard> {
   String getFormattedTimeSince(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
@@ -55,19 +74,49 @@ class ReportsCard extends StatelessWidget {
     }
   }
 
-  static const isAlreadyLiking = true;
+  bool isClicked = false;
 
   @override
   Widget build(BuildContext context) {
-    final formattedTimeSince = datePublished != null
-        ? getFormattedTimeSince(datePublished!)
+    Size size = MediaQuery.of(context).size;
+    final formattedTimeSince = widget.datePublished != null
+        ? getFormattedTimeSince(widget.datePublished!)
         : 'No Date';
+
+    ButtonStyle beforeClicked = ElevatedButton.styleFrom(
+      backgroundColor: AppColors.primaryColor,
+      minimumSize: Size(size.width * 0.8, 46),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+    );
+
+    ButtonStyle afterClicked = ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      minimumSize: Size(size.width * 0.8, 46),
+      side: const BorderSide(width: 4, color: AppColors.primaryColor),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+    );
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CircleAvatar(radius: 24.0, child: Icon(Icons.person)),
+          CircleAvatar(
+            radius: 24.0,
+            child: ClipOval(
+              child: Image.network(
+                widget.profilePhotoUrl ??
+                    'https://upload.wikimedia.org/wikipedia/commons/b/bc/Unknown_person.jpg',
+                fit: BoxFit
+                    .cover, // You can adjust the fit as per your requirement
+                width: 48.0, // Set the desired width for the image
+                height: 48.0, // Set the desired height for the image
+              ),
+            ),
+          ),
           const SizedBox(width: 16.0),
           Expanded(
             child: Column(
@@ -80,7 +129,7 @@ class ReportsCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "@${username!.toLowerCase()}",
+                          "@${widget.username!.toLowerCase()}",
                           style: const TextStyle(
                             fontSize: 18.0,
                           ),
@@ -98,7 +147,7 @@ class ReportsCard extends StatelessWidget {
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.4,
                               child: Text(
-                                "${location!.toLowerCase()} | ${detailLocation!.toLowerCase()}",
+                                "${widget.location!.toLowerCase()} | ${widget.detailLocation!.toLowerCase()}",
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 14.0,
@@ -116,16 +165,16 @@ class ReportsCard extends StatelessWidget {
                       decoration: BoxDecoration(
                           border: Border.all(color: Colors.black45, width: 2),
                           borderRadius: BorderRadius.circular(8),
-                          color: status == 0
+                          color: widget.status == 0
                               ? Colors.red
-                              : status == 1
+                              : widget.status == 1
                                   ? AppColors.primaryColor
                                   : Colors.green),
                       child: Center(
                         child: Text(
-                          status == 0
+                          widget.status == 0
                               ? "Reported"
-                              : status == 1
+                              : widget.status == 1
                                   ? "On progress"
                                   : "Fixed",
                           style: const TextStyle(
@@ -137,57 +186,59 @@ class ReportsCard extends StatelessWidget {
                     )
                   ],
                 ),
-                const SizedBox(height: 24.0),
+                const SizedBox(height: 12.0),
                 Text(
-                  reportsDescription ?? 'tidak ada data',
-                  style: const TextStyle(fontSize: 16.0),
+                  widget.reportsDescription ?? 'tidak ada data',
+                  style: const TextStyle(fontSize: 18.0),
                 ),
-                const SizedBox(height: 8.0),
+                const SizedBox(height: 12.0),
                 DisplayMedia(
-                  imageUrl: imageUrl,
-                  videoUrl: videoUrl,
+                  imageUrl: widget.imageUrl,
+                  videoUrl: widget.videoUrl,
                   dataSourceType: DataSourceType.network,
                 ),
-                const SizedBox(height: 8.0),
-                if (isHomePage)
+                widget.isHomePage
+                    ? const SizedBox(height: 24.0)
+                    : const SizedBox(height: 12.0),
+                if (widget.isHomePage)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Row(
                         children: [
                           InkWell(
-                            onTap: onLikeTap,
+                            onTap: widget.onLikeTap,
                             splashColor: Colors.grey.withOpacity(0.25),
-                            child: isAlreadyLiking
+                            child: ReportsCard.isAlreadyLiking
                                 ? const Icon(Icons.favorite, color: Colors.red)
                                 : const Icon(Icons.favorite_outline,
                                     color: Colors.red),
                           ),
                           const SizedBox(width: 4.0),
-                          Text(totalLikes.toString()),
+                          Text(widget.totalLikes.toString()),
                         ],
                       ),
                       Row(
                         children: [
                           const Icon(Icons.share, color: Colors.green),
                           const SizedBox(width: 4.0),
-                          Text(totalLikes.toString()),
+                          Text(widget.totalLikes.toString()),
                         ],
                       ),
                       Row(
                         children: [
                           InkWell(
-                              onTap: onCommentTap,
+                              onTap: widget.onCommentTap,
                               splashColor: Colors.grey.withOpacity(0.25),
                               child: const Icon(Icons.comment,
                                   color: Colors.blue)),
                           const SizedBox(width: 4.0),
-                          Text(totalComments.toString()),
+                          Text(widget.totalComments.toString()),
                         ],
                       ),
                     ],
                   ),
-                const SizedBox(height: 24.0),
+                const SizedBox(height: 12.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -197,6 +248,119 @@ class ReportsCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 12.0),
+
+                //if the role is admin
+                if (widget.isAdmin)
+                  widget.status == 0
+                      ? BlocConsumer<RootBloc, RootState>(
+                          listener: (context, state) {
+                            if (state is ButtonLoadedState) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  backgroundColor: Colors.green,
+                                  content: Text(
+                                      'Reports has been confirmed, please refresh the page'),
+                                ),
+                              );
+
+                              isClicked = true;
+                            }
+                          },
+                          builder: (context, state) {
+                            if (state is ButtonLoadingState) {
+                              return Center(
+                                child: LoadingAnimationWidget
+                                    .horizontalRotatingDots(
+                                        color: AppColors.primaryColor,
+                                        size: 20),
+                              );
+                            }
+                            if (isClicked == false) {
+                              return AuthButton(
+                                onTap: () {
+                                  setState(() {
+                                    isClicked = true;
+                                  });
+                                  widget.rootBloc!.add(
+                                    AdminConfirmingReportsEvent(
+                                      widget.reportsId!,
+                                    ),
+                                  );
+                                },
+                                textButton: 'Confirm',
+                                buttonStyle: beforeClicked,
+                                textStyle: const TextStyle(
+                                    color: Colors.white, fontSize: 20),
+                              );
+                            } else {
+                              return AuthButton(
+                                onTap: () {},
+                                textButton: 'Confirmed',
+                                buttonStyle: afterClicked,
+                                textStyle: const TextStyle(
+                                  color: AppColors.primaryColor,
+                                  fontSize: 20,
+                                ),
+                              );
+                            }
+                          },
+                        )
+                      : widget.status == 1
+                          ? BlocConsumer<RootBloc, RootState>(
+                              listener: (context, state) {
+                                if (state is ButtonLoadedState) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      backgroundColor: Colors.green,
+                                      content: Text(
+                                          'Reports has been confirmed, please refresh the page'),
+                                    ),
+                                  );
+
+                                  isClicked = true;
+                                }
+                              },
+                              builder: (context, state) {
+                                if (state is ButtonLoadingState) {
+                                  return Center(
+                                    child: LoadingAnimationWidget
+                                        .horizontalRotatingDots(
+                                            color: AppColors.primaryColor,
+                                            size: 20),
+                                  );
+                                }
+                                if (isClicked == false) {
+                                  return AuthButton(
+                                    onTap: () {
+                                      setState(() {
+                                        isClicked = true;
+                                      });
+                                      widget.rootBloc!.add(
+                                        AdminConfirmingReportsEvent(
+                                          widget.reportsId!,
+                                        ),
+                                      );
+                                    },
+                                    textButton: 'Fix It Now',
+                                    buttonStyle: beforeClicked,
+                                    textStyle: const TextStyle(
+                                        color: Colors.white, fontSize: 20),
+                                  );
+                                } else {
+                                  return AuthButton(
+                                    onTap: () {},
+                                    textButton: 'Fixed',
+                                    buttonStyle: afterClicked,
+                                    textStyle: const TextStyle(
+                                      color: AppColors.primaryColor,
+                                      fontSize: 20,
+                                    ),
+                                  );
+                                }
+                              },
+                            )
+                          : Container()
               ],
             ),
           ),

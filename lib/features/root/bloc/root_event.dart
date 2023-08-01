@@ -38,3 +38,31 @@ class ReportsEventUpdateCounter extends RootEvent {
 class LeaderboardsEvent extends RootEvent {}
 
 class LeaderboardsEventGetByUserId extends RootEvent {}
+
+//admin event
+class AdminConfirmingReportsEvent extends RootEvent {
+  final String reportsId;
+  AdminConfirmingReportsEvent(this.reportsId);
+}
+
+class AdminFixingReportsEventPost extends RootEvent {
+  final MediaUrl? mediaUrl;
+  final String reportsId;
+  final String? description;
+
+  AdminFixingReportsEventPost({
+    this.mediaUrl,
+    required this.reportsId,
+    this.description,
+  });
+}
+
+class AdminFixingReportsEventGet extends RootEvent {
+  final String reportsId;
+  AdminFixingReportsEventGet(this.reportsId);
+}
+
+class ButtonEvent extends RootEvent {
+  final bool? isClicked;
+  ButtonEvent(this.isClicked);
+}

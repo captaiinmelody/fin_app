@@ -60,6 +60,7 @@ class ReportsModels {
   final String? userId;
   final String? reportsId;
   final String? username;
+  final String? profilePhotoUrl;
   final MediaUrl? mediaUrl;
   final String? description;
   final DateTime? datePublished;
@@ -73,6 +74,7 @@ class ReportsModels {
   const ReportsModels({
     this.userId,
     this.username,
+    this.profilePhotoUrl,
     this.mediaUrl,
     this.reportsId,
     this.description,
@@ -89,6 +91,7 @@ class ReportsModels {
     String? userId,
     String? username,
     String? reportsId,
+    String? profilePhotoUrl,
     MediaUrl? mediaUrl,
     String? description,
     DateTime? datePublished,
@@ -104,6 +107,7 @@ class ReportsModels {
         username: username ?? this.username,
         reportsId: reportsId ?? this.reportsId,
         mediaUrl: mediaUrl ?? this.mediaUrl,
+        profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
         description: description ?? this.description,
         datePublished: datePublished ?? this.datePublished,
         totalLikes: totalLikes ?? this.totalLikes,
@@ -120,15 +124,17 @@ class ReportsModels {
       username: data['username'],
       reportsId: data['reportsId'],
       mediaUrl:
-          data['MediaUrl'] == null ? null : MediaUrl.fromMap(data['MediaUrl']),
+          data['mediaUrl'] == null ? null : MediaUrl.fromMap(data['mediaUrl']),
+      profilePhotoUrl: data['profilePhotoUrl'],
       description: data['description'],
-      datePublished: (data['datePublished'] as Timestamp).toDate(),
+      datePublished: data['datePublished'] == null
+          ? null
+          : (data['datePublished'] as Timestamp).toDate(),
       totalLikes: data['totalLikes'] ?? 0,
       totalComments: data['totalComments'] ?? 0,
-      // location: data['location'] ?? '',
       kampus: data['kampus'] ?? '',
       detailLokasi: data['detailLokasi'] ?? '',
-      status: data['status'] ?? 'null',
+      status: data['status'] ?? 0,
     );
   }
 
@@ -136,7 +142,8 @@ class ReportsModels {
         'userId': userId,
         'username': username,
         'reportsId': reportsId,
-        'MediaUrl': mediaUrl?.toMap(),
+        'mediaUrl': mediaUrl?.toMap(),
+        'profilePhotoUrl': profilePhotoUrl,
         'description': description,
         'datePublished': datePublished,
         'totalLikes': totalLikes,

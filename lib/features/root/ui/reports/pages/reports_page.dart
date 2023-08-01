@@ -3,13 +3,12 @@ import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:fin_app/constant/color.dart';
-import 'package:fin_app/features/firebase/auth/components/auth_input_components.dart';
+import 'package:fin_app/features/auth/components/auth_input_components.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
-import 'package:fin_app/features/root/components/image_view.dart';
-import 'package:fin_app/features/root/components/video_player_view.dart';
+import 'package:fin_app/features/root/components/display_image.dart';
+import 'package:fin_app/features/root/components/display_video.dart';
+import 'package:fin_app/features/root/ui/reports/components/button_media.dart';
 import 'package:fin_app/features/root/ui/reports/components/campus_selection.dart';
-import 'package:fin_app/features/root/ui/reports/components/custom_icon_button.dart';
-import 'package:fin_app/routes/route_const.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -212,8 +211,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   videoFiles = null;
                 });
 
-                GoRouter.of(context).goNamed(MyRouterConstant.homeRouterName);
-                context.pop();
+                GoRouter.of(context).pop();
               } else if (state is ErrorState) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -289,8 +287,23 @@ class _ReportsPageState extends State<ReportsPage> {
                       style: TextStyle(color: Colors.redAccent),
                     ),
                   const SizedBox(height: 24),
-                  buttonMedia(),
+                  ButtonMedia(
+                      imageFile: imageFiles,
+                      videoFile: videoFiles,
+                      onSelectImageTap: () {
+                        selectImage();
+                      },
+                      onSelectVideoTap: () {
+                        selectVideo();
+                      },
+                      onTakeImageTap: () async {
+                        pickImageFromCamera();
+                      },
+                      onTakeVideoTap: () async {
+                        recordVideoFromCamera();
+                      }),
                   CampusSelection(
+                    isEnabled: false,
                     onChanged: (selectedValue) {
                       setState(() {
                         selectedDropdownItem = selectedValue;
@@ -314,49 +327,10 @@ class _ReportsPageState extends State<ReportsPage> {
     );
   }
 
-  Column buttonMedia() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (imageFiles == null)
-          CustomIconButton(
-            onPressed: () {
-              selectImage();
-            },
-            icon: const Icon(Icons.image_outlined),
-            label: 'Select an image...',
-          ),
-        if (videoFiles == null)
-          CustomIconButton(
-            onPressed: () {
-              selectVideo();
-            },
-            icon: const Icon(Icons.video_file_outlined),
-            label: 'Select a video...',
-          ),
-        if (imageFiles == null)
-          CustomIconButton(
-            onPressed: () async {
-              pickImageFromCamera();
-            },
-            icon: const Icon(Icons.camera_alt_outlined),
-            label: 'Take an image...',
-          ),
-        if (videoFiles == null)
-          CustomIconButton(
-            onPressed: () async {
-              recordVideoFromCamera();
-            },
-            icon: const Icon(Icons.videocam_outlined),
-            label: 'Record a video...',
-          ),
-      ],
-    );
-  }
-
   Widget displayMedia() {
     return Container(
-      height: 200,
+      height: MediaQuery.of(context).size.height * 0.26,
+      width: MediaQuery.of(context).size.width,
       margin: const EdgeInsets.only(bottom: 12),
       child: Stack(
         children: [
@@ -364,7 +338,7 @@ class _ReportsPageState extends State<ReportsPage> {
             controller: pageController,
             children: [
               if (imageFiles != null)
-                ImageView(
+                DisplayImage(
                   url: imageFiles!.path,
                   dataSourceType: DataSourceType.file,
                   onPressed: () {
@@ -374,7 +348,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   },
                 ),
               if (videoFiles != null)
-                VideoPlayerView(
+                DisplayVideo(
                   url: videoFiles!.path,
                   dataSourceType: DataSourceType.file,
                   onPressed: () {

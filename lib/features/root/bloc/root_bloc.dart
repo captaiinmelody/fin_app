@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:fin_app/features/firebase/auth/data/models/response/user_response_models.dart';
+import 'package:fin_app/features/auth/data/models/response/user_response_models.dart';
+import 'package:fin_app/features/root/data/datasources/admin_reports_sources.dart';
 import 'package:fin_app/features/root/data/datasources/leaderboards_sources.dart';
 import 'package:fin_app/features/root/data/datasources/profile_sources.dart';
 import 'package:fin_app/features/root/data/datasources/report_sources.dart';
@@ -13,15 +14,63 @@ part 'root_event.dart';
 part 'root_state.dart';
 
 class RootBloc extends Bloc<RootEvent, RootState> {
+  AdminReportsDataSources adminReportsDataSources;
   ReportsDataSources reportsDataSources;
   LeaderboardSources leaderboardSources;
   ProfileDataSources profileDataSources;
+
   RootBloc(
+    this.adminReportsDataSources,
     this.reportsDataSources,
     this.leaderboardSources,
     this.profileDataSources,
   ) : super(InitialState()) {
     on<HomeEvent>((event, emit) {});
+
+    //admin bloc
+    on<AdminConfirmingReportsEvent>(((event, emit) async {
+      emit(ButtonLoadingState());
+      try {
+        //update the reports by admin (confirmed reports)
+        final isClicked =
+            await adminReportsDataSources.reportsComfirmed(event.reportsId);
+
+        emit(ButtonLoadedState(isClicked));
+      } catch (e) {
+        emit(ErrorState(message: e.toString()));
+      }
+    }));
+
+    on<AdminFixingReportsEventPost>(((event, emit) async {
+      emit(ButtonLoadingState());
+
+      try {
+        //fetching data reports by reportsId
+        final response =
+            await adminReportsDataSources.getReports(event.reportsId);
+
+        //update the reports by admin (fixed reports)
+        await adminReportsDataSources.reportsFixed(const MediaUrl(),
+            documentId: event.reportsId, description: event.description);
+
+        emit(AdminLoadedState(reportsModels: response));
+      } catch (e) {
+        emit(ErrorState(message: e.toString()));
+      }
+    }));
+
+    on<AdminFixingReportsEventGet>(((event, emit) async {
+      emit(LoadingState());
+      try {
+        final response =
+            await adminReportsDataSources.getReports(event.reportsId);
+
+        emit(AdminLoadedState(reportsModels: response));
+      } catch (e) {
+        emit(ErrorState(message: e.toString()));
+      }
+    }));
+
     on<ReportsEventPost>((event, emit) async {
       emit(LoadingState());
 

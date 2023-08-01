@@ -7,9 +7,16 @@ class AuthLocalStorage {
     return token;
   }
 
-  Future<String> saveRole(String role) async {
+  Future<String> saveUserId(String userId) async {
     final pref = await SharedPreferences.getInstance();
-    await pref.setString('role', role);
+    await pref.setString("userId", userId);
+
+    return userId;
+  }
+
+  Future<bool> saveRole(bool role) async {
+    final pref = await SharedPreferences.getInstance();
+    await pref.setBool('role', role);
     return role;
   }
 
@@ -30,7 +37,7 @@ class AuthLocalStorage {
 
   Future<bool> isRoleAdmin() async {
     final pref = await SharedPreferences.getInstance();
-    return pref.getString('role') == "admin";
+    return pref.getBool('role')!;
   }
 
   Future<bool> removeToken() async {

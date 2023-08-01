@@ -12,14 +12,23 @@ class LoadingState extends RootState {
   });
 }
 
+class ButtonLoadingState extends RootState {}
+
+class ButtonLoadedState extends RootState {
+  final bool? isClicked;
+  ButtonLoadedState(this.isClicked);
+}
+
 class LoadedState extends RootState {
   final String? response;
   final List<ReportsModels>? listOfReportsModels;
+  final ReportsModels? reportsModelsById;
   final int? counter;
 
   LoadedState({
     this.response,
     this.listOfReportsModels,
+    this.reportsModelsById,
     this.counter,
   });
 }
@@ -39,6 +48,11 @@ class ProfileLoadedState extends RootState {
   ProfileLoadedState({
     this.userResponseModels,
   });
+}
+
+class AdminLoadedState extends RootState {
+  final ReportsModels? reportsModels;
+  AdminLoadedState({this.reportsModels});
 }
 
 class ErrorState extends RootState {

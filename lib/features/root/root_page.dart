@@ -1,4 +1,5 @@
 import 'package:fin_app/constant/color.dart';
+import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_config.dart';
@@ -17,6 +18,7 @@ class RootPage extends StatefulWidget {
 
 class _RootPageState extends State<RootPage> {
   final RootBloc rootBloc = RootBloc(
+    adminReportsDataSources,
     reportsDataSources,
     leaderboardSources,
     profileDataSources,
@@ -27,8 +29,15 @@ class _RootPageState extends State<RootPage> {
     MyRouterConstant.profileRouterName,
   ];
 
+  bool? isAdmin;
+
+  getRole() async {
+    isAdmin = await AuthLocalStorage().isRoleAdmin();
+  }
+
   @override
   void initState() {
+    getRole();
     askForPermission();
     super.initState();
   }
@@ -50,24 +59,25 @@ class _RootPageState extends State<RootPage> {
     // Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: widget.child,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return ReportsPage(rootBloc: rootBloc);
-              });
-
-          // GoRouter.of(context).goNamed(MyRouterConstant.reportsRouterName);
-        },
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        child: const Icon(
-          Icons.report_sharp,
-          size: 32,
-        ),
-      ),
+      floatingActionButton: isAdmin == false
+          ? FloatingActionButton(
+              onPressed: () async {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ReportsPage(rootBloc: rootBloc);
+                    });
+              },
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32)),
+              child: const Icon(
+                Icons.report_sharp,
+                size: 32,
+              ),
+            )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       resizeToAvoidBottomInset: false,
       bottomNavigationBar: BottomNavigationBar(
