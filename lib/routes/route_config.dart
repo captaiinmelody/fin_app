@@ -1,8 +1,8 @@
 import 'package:fin_app/features/auth/bloc/auth_bloc.dart';
+import 'package:fin_app/features/auth/data/datasources/auth_sources.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/auth/pages/login_page.dart';
 import 'package:fin_app/features/auth/pages/register_page.dart';
-import 'package:fin_app/features/firebase/auth/data/datasources/auth_sources.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/data/datasources/admin_reports_sources.dart';
 import 'package:fin_app/features/root/data/datasources/leaderboards_sources.dart';

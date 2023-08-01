@@ -1,9 +1,9 @@
 import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/constant/text_styles.dart';
 import 'package:fin_app/features/auth/bloc/auth_bloc.dart';
+import 'package:fin_app/features/auth/components/auth_button_component.dart';
 import 'package:fin_app/features/auth/components/auth_input_components.dart';
 import 'package:fin_app/features/auth/components/auth_question_components.dart';
-import 'package:fin_app/features/firebase/auth/components/auth_button_component.dart';
 import 'package:fin_app/routes/route_const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
