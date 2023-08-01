@@ -2,8 +2,8 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fin_app/features/auth/bloc/auth_bloc.dart';
+import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/auth/data/models/response/user_response_models.dart';
-import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/firebase/auth/data/models/request/user_models.dart';
 import 'package:fin_app/features/root/data/datasources/profile_sources.dart';
 import 'package:firebase_auth/firebase_auth.dart';

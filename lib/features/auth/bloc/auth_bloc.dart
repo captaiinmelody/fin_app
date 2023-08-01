@@ -1,5 +1,5 @@
+import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/auth/data/models/response/user_response_models.dart';
-import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/firebase/auth/data/datasources/auth_sources.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

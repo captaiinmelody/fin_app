@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/auth/data/models/response/user_response_models.dart';
-import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
 
 import 'package:flutter/foundation.dart';
 

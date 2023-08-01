@@ -1,5 +1,5 @@
 import 'package:fin_app/constant/color.dart';
-import 'package:fin_app/features/firebase/auth/data/localresources/auth_local_storage.dart';
+import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_config.dart';
