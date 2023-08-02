@@ -19,14 +19,14 @@ class LogoutConfirmation extends StatelessWidget {
             // Image.asset('../../../../../assets/logout_modal.png'),
             // const SizedBox(height: 24.0),
             const Text(
-              'Logout Account?',
+              'Logout Akun',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 4.0),
-            const Text('Are you sure want to logout?'),
+            const Text('Anda yakin ingin keluar?'),
             const SizedBox(height: 24.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

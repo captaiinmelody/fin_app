@@ -35,25 +35,25 @@ class _ButtonMediaState extends State<ButtonMedia> {
           CustomIconButton(
             onPressed: widget.onSelectImageTap,
             icon: const Icon(Icons.image_outlined),
-            label: 'Select an image...',
+            label: 'Ambil gambar dari gallery',
           ),
         if (widget.videoFile == null)
           CustomIconButton(
             onPressed: widget.onSelectVideoTap,
             icon: const Icon(Icons.video_file_outlined),
-            label: 'Select a video...',
+            label: 'Ambail video dari gallery',
           ),
         if (widget.imageFile == null)
           CustomIconButton(
             onPressed: widget.onTakeImageTap,
             icon: const Icon(Icons.camera_alt_outlined),
-            label: 'Take an image...',
+            label: 'Ambil gambar menggunakan kamera',
           ),
         if (widget.videoFile == null)
           CustomIconButton(
             onPressed: widget.onTakeVideoTap,
             icon: const Icon(Icons.videocam_outlined),
-            label: 'Record a video...',
+            label: 'Rekam video menggunakan kamera',
           ),
       ],
     );

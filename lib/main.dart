@@ -1,5 +1,5 @@
 import 'package:fin_app/features/auth/bloc/auth_bloc.dart';
-import 'package:fin_app/features/firebase/auth/data/datasources/auth_sources.dart';
+import 'package:fin_app/features/auth/data/datasources/auth_sources.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/firebase_options.dart';
 import 'package:fin_app/routes/route_config.dart';

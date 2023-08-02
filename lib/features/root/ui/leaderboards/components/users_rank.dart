@@ -1,5 +1,7 @@
 import 'package:fin_app/constant/color.dart';
+import 'package:fin_app/routes/route_config.dart';
 import 'package:flutter/material.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class UserRank extends StatefulWidget {
   final String? rank;
@@ -17,6 +19,14 @@ class UserRank extends StatefulWidget {
 }
 
 class _UserRankState extends State<UserRank> {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) =>
+        ShowCaseWidget.of(context)
+            .startShowCase([globalKeyTwo, globalKeyThree]));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -57,56 +67,66 @@ class _UserRankState extends State<UserRank> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    color: AppColors.lightIndigo,
-                    borderRadius: BorderRadius.circular(12)),
-                height: 100,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      widget.rank ?? "0",
-                      style: const TextStyle(fontSize: 40),
-                    ),
-                    const SizedBox(
-                      width: 100,
-                      child: Text(
-                        'Rank',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
+              Showcase(
+                key: globalKeyTwo,
+                title: 'Ini adalah ranking kamu',
+                description: '',
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      color: AppColors.lightIndigo,
+                      borderRadius: BorderRadius.circular(12)),
+                  height: 100,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.rank ?? "0",
+                        style: const TextStyle(fontSize: 40),
                       ),
-                    )
-                  ],
+                      const SizedBox(
+                        width: 100,
+                        child: Text(
+                          'Peringkat',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    color: AppColors.lightIndigo,
-                    borderRadius: BorderRadius.circular(12)),
-                height: 100,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      widget.badges ?? "0",
-                      style: const TextStyle(fontSize: 40),
-                    ),
-                    const SizedBox(
-                      width: 100,
-                      child: Text(
-                        'Badges',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
+              Showcase(
+                key: globalKeyTwo,
+                title: 'Ini adalah jumlah lencana kamu',
+                description: '',
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      color: AppColors.lightIndigo,
+                      borderRadius: BorderRadius.circular(12)),
+                  height: 100,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.badges ?? "0",
+                        style: const TextStyle(fontSize: 40),
                       ),
-                    )
-                  ],
+                      const SizedBox(
+                        width: 100,
+                        child: Text(
+                          'Lencana',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               )
             ],

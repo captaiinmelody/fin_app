@@ -42,6 +42,7 @@ dependencies:
   popup_banner: ^1.0.0
   shared_preferences: ^2.1.2
   shimmer: ^3.0.0
+  showcaseview: ^2.0.3
   uuid: ^3.0.7
   video_player: ^2.7.0
 

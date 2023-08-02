@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is ErrorState) {
                       // Show an error message if data fetching fails
-                      return Text('Error fetching user data');
+                      return const Text('Error saat pengambilan data');
                     } else if (state is ProfileLoadedState) {
                       // Data fetched successfully, update ProfileAppBar
                       return ProfileAppBar(

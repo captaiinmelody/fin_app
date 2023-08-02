@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 
-class ReportsCardSkeleton extends StatefulWidget {
-  const ReportsCardSkeleton({super.key});
+class ReportsCardSkeleton extends StatelessWidget {
+  final bool isHomePage;
+  const ReportsCardSkeleton({super.key, required this.isHomePage});
 
-  @override
-  State<ReportsCardSkeleton> createState() => _ReportsCardSkeletonState();
-}
-
-class _ReportsCardSkeletonState extends State<ReportsCardSkeleton> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -24,7 +20,12 @@ class _ReportsCardSkeletonState extends State<ReportsCardSkeleton> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    skeletonItems(width: 120, height: 24),
+                    Column(
+                      children: [
+                        skeletonItems(width: 120, height: 24),
+                        skeletonItems(width: 120, height: 24),
+                      ],
+                    ),
                     skeletonItems(width: 120, height: 24),
                   ],
                 ),
@@ -33,14 +34,15 @@ class _ReportsCardSkeletonState extends State<ReportsCardSkeleton> {
                 const SizedBox(height: 8.0),
                 skeletonItems(width: 270, height: 200),
                 const SizedBox(height: 8.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    skeletonItems(width: 72, height: 24),
-                    skeletonItems(width: 72, height: 24),
-                    skeletonItems(width: 72, height: 24),
-                  ],
-                ),
+                if (isHomePage)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      skeletonItems(width: 72, height: 24),
+                      skeletonItems(width: 72, height: 24),
+                      skeletonItems(width: 72, height: 24),
+                    ],
+                  ),
                 const SizedBox(height: 24.0),
                 skeletonItems(width: 72, height: 24),
               ],

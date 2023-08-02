@@ -5,10 +5,12 @@ import 'package:fin_app/features/root/components/hideable_app_bar.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:fin_app/features/root/components/reports_card.dart';
 import 'package:fin_app/features/root/components/reports_card_skeleton.dart';
+import 'package:fin_app/routes/route_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:video_player/video_player.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,6 +28,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     fetchData();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) =>
+        ShowCaseWidget.of(context).startShowCase([globalKeyTwelve]));
     super.initState();
   }
 
@@ -41,7 +45,7 @@ class _HomePageState extends State<HomePage> {
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             HideableAppBar(
-                child: Text('Home',
+                child: Text('Beranda',
                     style: TextStyles.titleText.copyWith(color: Colors.white))),
           ];
         },
@@ -58,7 +62,7 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return const Column(
                       children: [
-                        ReportsCardSkeleton(),
+                        ReportsCardSkeleton(isHomePage: true),
                         Divider(),
                       ],
                     );
@@ -77,49 +81,54 @@ class _HomePageState extends State<HomePage> {
                       (a, b) => b.datePublished!.compareTo(a.datePublished!));
                   return Column(
                     children: [
-                      ReportsCard(
-                        username: content.username,
-                        profilePhotoUrl: content.profilePhotoUrl,
-                        location: content.kampus,
-                        detailLocation: content.detailLokasi,
-                        reportsDescription: content.description,
-                        imageUrl: content.mediaUrl?.imageUrl,
-                        videoUrl: content.mediaUrl?.videoUrl,
-                        totalLikes: totalLikes,
-                        totalComments: totalComments,
-                        datePublished: content.datePublished,
-                        status: content.status,
-                        viewImage: () {
-                          showGeneralDialog(
-                            context: context,
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) {
-                              return DisplayImage(
-                                url: content.mediaUrl!.imageUrl!,
-                                dataSourceType: DataSourceType.network,
-                                onPressed: () {
-                                  GoRouter.of(context).pop();
-                                },
-                              );
-                            },
-                          );
-                        },
-                        onLikeTap: () async {
-                          setState(() {
-                            totalLikes = content.totalLikes! + 1;
-                            widget.rootBloc.add(ReportsEventUpdateCounter(
-                                reportsId: reportsId, counter: 'totalLikes'));
-                          });
-                        },
-                        onCommentTap: () {
-                          setState(() {
-                            totalComments = content.totalComments! + 1;
-                            widget.rootBloc.add(ReportsEventUpdateCounter(
-                                reportsId: reportsId,
-                                counter: 'totalComments'));
-                          });
-                        },
-                        isHomePage: true,
+                      Showcase(
+                        key: globalKeyTwelve,
+                        title: 'Informasi laporan',
+                        description: '',
+                        child: ReportsCard(
+                          username: content.username,
+                          profilePhotoUrl: content.profilePhotoUrl,
+                          location: content.kampus,
+                          detailLocation: content.detailLokasi,
+                          reportsDescription: content.description,
+                          imageUrl: content.mediaUrl?.imageUrl,
+                          videoUrl: content.mediaUrl?.videoUrl,
+                          totalLikes: totalLikes,
+                          totalComments: totalComments,
+                          datePublished: content.datePublished,
+                          status: content.status,
+                          viewImage: () {
+                            showGeneralDialog(
+                              context: context,
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) {
+                                return DisplayImage(
+                                  url: content.mediaUrl!.imageUrl!,
+                                  dataSourceType: DataSourceType.network,
+                                  onPressed: () {
+                                    GoRouter.of(context).pop();
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          onLikeTap: () async {
+                            setState(() {
+                              totalLikes = content.totalLikes! + 1;
+                              widget.rootBloc.add(ReportsEventUpdateCounter(
+                                  reportsId: reportsId, counter: 'totalLikes'));
+                            });
+                          },
+                          onCommentTap: () {
+                            setState(() {
+                              totalComments = content.totalComments! + 1;
+                              widget.rootBloc.add(ReportsEventUpdateCounter(
+                                  reportsId: reportsId,
+                                  counter: 'totalComments'));
+                            });
+                          },
+                          isHomePage: true,
+                        ),
                       ),
                       const Divider(),
                     ],

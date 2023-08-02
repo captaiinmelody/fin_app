@@ -25,27 +25,27 @@ class ProfileMenuParent extends StatelessWidget {
           children: [
             ProfileMenu(
               onTap: settingsOnTap,
-              label: "Account Settings",
+              label: "Pengaturan akun",
               icon: Icons.settings_outlined,
             ),
             ProfileMenu(
               onTap: achivementOnTap,
-              label: "Achievement",
+              label: "Lencana",
               icon: Icons.military_tech_outlined,
             ),
             ProfileMenu(
               onTap: aboutOnTap,
-              label: "About",
+              label: "Tentang kami",
               icon: Icons.error_outline,
             ),
             ProfileMenu(
               onTap: aboutOnTap,
-              label: "Rate Us",
+              label: "Brikan peringkat untuk kami",
               icon: Icons.star_outline,
             ),
             ProfileMenu(
               onTap: logoutOnTap,
-              label: "Log Out",
+              label: "Keluar",
               icon: Icons.logout_outlined,
               menuColor: Colors.redAccent,
             ),

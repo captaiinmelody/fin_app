@@ -58,7 +58,7 @@ class _MyReportsPageState extends State<MyReportsPage>
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               HideableAppBar(
-                  child: Text('My Reports',
+                  child: Text('Laporan',
                       style:
                           TextStyles.titleText.copyWith(color: Colors.white))),
               SliverPersistentHeader(
@@ -66,9 +66,9 @@ class _MyReportsPageState extends State<MyReportsPage>
                   TabBar(
                     controller: _tabController,
                     tabs: const [
-                      Tab(text: 'Reported'),
-                      Tab(text: 'On Progress'),
-                      Tab(text: 'Fixed'),
+                      Tab(text: 'Dilaporkan'),
+                      Tab(text: 'Terkonfirmasi'),
+                      Tab(text: 'Telah diperbaiki'),
                     ],
                   ),
                 ),
@@ -86,7 +86,7 @@ class _MyReportsPageState extends State<MyReportsPage>
                   itemBuilder: (context, index) {
                     return const Column(
                       children: [
-                        ReportsCardSkeleton(),
+                        ReportsCardSkeleton(isHomePage: false),
                         Divider(),
                       ],
                     );
@@ -153,15 +153,15 @@ class _MyReportsPageState extends State<MyReportsPage>
       );
     } else if (status == 0) {
       return const Center(
-        child: Text("You haven't made a reports..."),
+        child: Text("Data laporan tidak ada, buat laporan terlebih dahulu"),
       );
     } else if (status == 1) {
       return const Center(
-        child: Text("None of your reports is being process..."),
+        child: Text("Belum ada laporan yang terkonfirmasi"),
       );
     } else {
       return const Center(
-        child: Text("None of your reports is being fixed..."),
+        child: Text("Belum ada laporan yang telah diperbaiki"),
       );
     }
   }

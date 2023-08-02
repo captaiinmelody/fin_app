@@ -17,11 +17,11 @@ class _CampusSelectionState extends State<CampusSelection> {
   String? selectedValue;
 
   final List<String> dropdownItems = [
-    'Campus 1',
-    'Campus 2',
-    'Campus 3',
-    'Campus 4',
-    'Campus 5',
+    'Kampus 1',
+    'Kampus 2',
+    'Kampus 3',
+    'Kampus 4',
+    'Kampus 5',
   ];
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class _CampusSelectionState extends State<CampusSelection> {
           widget.onChanged(selectedValue!);
         },
         decoration: InputDecoration(
-          labelText: 'Campus',
+          labelText: 'Pilih kampus',
           prefixIcon: const Icon(Icons.apartment_outlined),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding:

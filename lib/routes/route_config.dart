@@ -28,6 +28,19 @@ final GlobalKey<NavigatorState> userNavigatorKey =
 final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
     GlobalKey<RefreshIndicatorState>();
 
+final GlobalKey globalKeyOne = GlobalKey();
+final GlobalKey globalKeyTwo = GlobalKey();
+final GlobalKey globalKeyThree = GlobalKey();
+final GlobalKey globalKeyFour = GlobalKey();
+final GlobalKey globalKeyFive = GlobalKey();
+final GlobalKey globalKeySix = GlobalKey();
+final GlobalKey globalKeySeven = GlobalKey();
+final GlobalKey globalKeyEight = GlobalKey();
+final GlobalKey globalKeyNine = GlobalKey();
+final GlobalKey globalKeyTen = GlobalKey();
+final GlobalKey globalKeyEleven = GlobalKey();
+final GlobalKey globalKeyTwelve = GlobalKey();
+
 final AuthRepository _authRepository = AuthRepository();
 final AuthBloc authBloc = AuthBloc(_authRepository);
 

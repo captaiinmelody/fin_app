@@ -18,37 +18,11 @@ class LeaderboardsCardsSkeleton extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return Container(
       width: size.width,
-      padding: const EdgeInsets.all(8),
-      margin: const EdgeInsets.all(8),
+      height: 20,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.grey, // Set the shadow color
-              offset: Offset(
-                  0, 3), // Set the offset of the shadow (horizontal, vertical)
-              blurRadius: 6, // Set the blur radius of the shadow
-              spreadRadius: 2,
-            ),
-          ]),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(radius: 24.0, backgroundColor: Colors.grey),
-              const SizedBox(width: 16),
-              skeletonItems(width: 96, height: 24),
-            ],
-          ),
-          Row(
-            children: [
-              skeletonItems(width: 36, height: 24),
-              skeletonItems(width: 36, height: 24),
-            ],
-          )
-        ],
+        color: Colors.grey,
+        borderRadius: BorderRadius.circular(12),
       ),
     );
   }

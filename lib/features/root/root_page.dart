@@ -7,6 +7,7 @@ import 'package:fin_app/routes/route_const.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class RootPage extends StatefulWidget {
   final Widget child;
@@ -39,6 +40,15 @@ class _RootPageState extends State<RootPage> {
   void initState() {
     getRole();
     askForPermission();
+    WidgetsBinding.instance.addPostFrameCallback(
+        (timeStamp) => ShowCaseWidget.of(context).startShowCase([
+              globalKeyOne,
+              globalKeyTwo,
+              globalKeyThree,
+              globalKeyFour,
+              globalKeyFive,
+              globalKeySix
+            ]));
     super.initState();
   }
 
@@ -60,50 +70,62 @@ class _RootPageState extends State<RootPage> {
     return Scaffold(
       body: widget.child,
       floatingActionButton: isAdmin == false
-          ? FloatingActionButton(
-              onPressed: () async {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return ReportsPage(rootBloc: rootBloc);
-                    });
-              },
-              backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(32)),
-              child: const Icon(
-                Icons.report_sharp,
-                size: 32,
+          ? Showcase(
+              key: globalKeyTwo,
+              title: 'Menambahkan Laporan',
+              description:
+                  'Klik tombol ini untuk membuat laporan kerusakan fasilitas',
+              child: FloatingActionButton(
+                onPressed: () async {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return ReportsPage(rootBloc: rootBloc);
+                      });
+                },
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32)),
+                child: const Icon(
+                  Icons.report_sharp,
+                  size: 32,
+                ),
               ),
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       resizeToAvoidBottomInset: false,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: calculateSelectedIndex(context),
-        onTap: (int index) {
-          setState(() => onItemTapped(index, context));
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report),
-            label: 'My Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Leaderboards',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+      bottomNavigationBar: Showcase(
+        key: globalKeyOne,
+        title: 'Halaman',
+        description:
+            'Halaman beranda untuk menampilkan keseluruhan laporan,\nhalaman laporan untuk menampilkan laporan anda,\nhalaman peringkat untuk menampilkan peringkat anda, \nhalaman profil untuk mengelola akun anda',
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: calculateSelectedIndex(context),
+          onTap: (int index) {
+            setState(() => onItemTapped(index, context));
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Beranda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.report),
+              label: 'Laporan',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart),
+              label: 'Peringkat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profil',
+            ),
+          ],
+        ),
       ),
     );
   }

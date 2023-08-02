@@ -9,6 +9,7 @@ import 'package:fin_app/routes/route_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class LeaderboardsPage extends StatefulWidget {
   const LeaderboardsPage({super.key});
@@ -21,6 +22,8 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
   @override
   void initState() {
     fetchData();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) =>
+        ShowCaseWidget.of(context).startShowCase([globalKeyOne]));
     super.initState();
   }
 
@@ -30,13 +33,13 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Size size = MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             HideableAppBar(
-                child: Text('Leaderboards',
+                child: Text('Peringkat',
                     style: TextStyles.titleText.copyWith(color: Colors.white))),
           ];
         },
@@ -48,44 +51,64 @@ class _LeaderboardsPageState extends State<LeaderboardsPage> {
               return Shimmer.fromColors(
                 baseColor: Colors.grey.withOpacity(0.5),
                 highlightColor: Colors.white,
-                child: ListView.builder(
-                  itemCount: 5,
-                  itemBuilder: (context, index) {
-                    return const LeaderboardsCardsSkeleton();
-                  },
-                ),
-              );
-            } else if (state is LeaderboardsLoadedState) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Column(
                   children: [
-                    UserRank(
-                      username:
-                          '@${state.leaderboardsModels?.username!.toLowerCase()}',
-                      rank: state.leaderboardsModels?.rank.toString(),
-                      badges: state.leaderboardsModels?.badges.toString(),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: state.listOfLeaderboardsModels?.length ?? 5,
-                        itemBuilder: (context, index) {
-                          LeaderboardsModels? leaderboards =
-                              state.listOfLeaderboardsModels?[index];
-                          return LeaderboardsCards(
-                            userName:
-                                '@${leaderboards?.username!.toLowerCase()}',
-                            badges: leaderboards?.badges,
-                          );
-                        },
+                    Container(
+                      width: size.width,
+                      height: 20,
+                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                    ),
+                    ListView.builder(
+                      itemCount: 8,
+                      itemBuilder: (context, index) {
+                        return const LeaderboardsCardsSkeleton();
+                      },
                     ),
                   ],
                 ),
               );
+            } else if (state is LeaderboardsLoadedState) {
+              return Showcase(
+                key: globalKeyOne,
+                title: 'Informasi peringkat anda',
+                description: '',
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Column(
+                    children: [
+                      UserRank(
+                        username:
+                            '@${state.leaderboardsModels?.username!.toLowerCase()}',
+                        rank: state.leaderboardsModels?.rank.toString(),
+                        badges: state.leaderboardsModels?.badges.toString(),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount:
+                              state.listOfLeaderboardsModels?.length ?? 5,
+                          itemBuilder: (context, index) {
+                            LeaderboardsModels? leaderboards =
+                                state.listOfLeaderboardsModels?[index];
+                            return LeaderboardsCards(
+                              userName:
+                                  '@${leaderboards?.username!.toLowerCase()}',
+                              badges: leaderboards?.badges,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             } else {
               return const Center(
-                child: Text("Please do a reports to see your rankings..."),
+                child: Text(
+                    "Buat laporan terlebih dahulu untuk melihat peringkat anda"),
               );
             }
           }),
