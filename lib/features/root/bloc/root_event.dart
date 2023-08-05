@@ -49,11 +49,15 @@ class AdminFixingReportsEventPost extends RootEvent {
   final MediaUrl? mediaUrl;
   final String reportsId;
   final String? description;
+  final File? imageFiles;
+  final File? videoFiles;
 
   AdminFixingReportsEventPost({
     this.mediaUrl,
     required this.reportsId,
     this.description,
+    this.imageFiles,
+    this.videoFiles,
   });
 }
 

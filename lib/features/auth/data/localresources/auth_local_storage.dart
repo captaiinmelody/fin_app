@@ -44,4 +44,15 @@ class AuthLocalStorage {
     final pref = await SharedPreferences.getInstance();
     return pref.remove('token');
   }
+
+  Future<bool> saveCheckShowcase(bool alreadyShowcasing) async {
+    final pref = await SharedPreferences.getInstance();
+    await pref.setBool('alreadyShowcasing', alreadyShowcasing);
+    return alreadyShowcasing;
+  }
+
+  Future<bool> getCheckShowcase() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.getBool('alreadyShowcasing')!;
+  }
 }

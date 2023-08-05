@@ -42,18 +42,33 @@ class RootBloc extends Bloc<RootEvent, RootState> {
     }));
 
     on<AdminFixingReportsEventPost>(((event, emit) async {
-      emit(ButtonLoadingState());
+      emit(LoadingState());
 
       try {
-        //fetching data reports by reportsId
-        final response =
-            await adminReportsDataSources.getReports(event.reportsId);
+        List<String> missingFields = [];
+        if (event.description == null || event.description == '') {
+          missingFields.add("Description");
+        }
+        if (event.imageFiles == null && event.videoFiles == null) {
+          missingFields.add("Image or video");
+        }
+        String combinedMessage = "${missingFields.join(", ")} cannot be empty";
 
-        //update the reports by admin (fixed reports)
-        await adminReportsDataSources.reportsFixed(const MediaUrl(),
-            documentId: event.reportsId, description: event.description);
-
-        emit(AdminLoadedState(reportsModels: response));
+        if (event.description != '') {
+          if ((event.imageFiles != null && event.videoFiles == null) ||
+              (event.imageFiles == null && event.videoFiles != null) ||
+              (event.imageFiles != null && event.videoFiles != null)) {
+            final response = await reportsDataSources.reportsFixed(
+              event.description,
+              event.imageFiles,
+              event.videoFiles,
+              event.reportsId,
+            );
+            emit(LoadedState(response: response));
+          }
+        } else {
+          emit(ErrorState(message: combinedMessage));
+        }
       } catch (e) {
         emit(ErrorState(message: e.toString()));
       }
@@ -118,9 +133,9 @@ class RootBloc extends Bloc<RootEvent, RootState> {
       ((event, emit) async {
         emit(LoadingState());
         try {
-          final result = await reportsDataSources.getReports();
+          final result1 = await reportsDataSources.getReports();
 
-          emit(LoadedState(listOfReportsModels: result));
+          emit(LoadedState(listOfReportsModels: result1));
         } catch (e) {
           emit(ErrorState(message: e.toString()));
         }

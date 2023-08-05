@@ -34,6 +34,7 @@ class AuthRepository {
           final bool isAdmin = userResponseModels.isAdmin ?? false;
 
           await AuthLocalStorage().saveRole(isAdmin);
+          await AuthLocalStorage().saveCheckShowcase(false);
 
           print(isAdmin);
 

@@ -18,8 +18,8 @@ class LeaderboardsCardsSkeleton extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return Container(
       width: size.width,
-      height: 20,
-      margin: const EdgeInsets.symmetric(horizontal: 12),
+      height: 24,
+      margin: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
       decoration: BoxDecoration(
         color: Colors.grey,
         borderRadius: BorderRadius.circular(12),

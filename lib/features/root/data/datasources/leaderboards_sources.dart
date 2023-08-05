@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/data/models/leaderboards_models.dart';
+import 'package:flutter/material.dart';
 
 class LeaderboardSources {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -22,8 +23,11 @@ class LeaderboardSources {
         leaderboardsList[i] = leaderboardsList[i].copyWith(rank: i + 1);
       }
 
+      print("agus");
+
       return leaderboardsList;
     } catch (e) {
+      print('terjadi kesalahan');
       // Handle any errors that occur during the data fetching process
       throw e.toString();
     }
@@ -36,6 +40,8 @@ class LeaderboardSources {
 
       LeaderboardsModels userLeaderboards =
           leaderboardList.firstWhere((element) => element.userId == userId);
+
+      debugPrint("agus");
 
       return userLeaderboards;
     } catch (e) {

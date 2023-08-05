@@ -1,6 +1,8 @@
 import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
+import 'package:fin_app/features/root/components/show_case_view.dart';
+import 'package:fin_app/features/root/data/localstorage/root_local_storage.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_config.dart';
 import 'package:fin_app/routes/route_const.dart';
@@ -31,25 +33,33 @@ class _RootPageState extends State<RootPage> {
   ];
 
   bool? isAdmin;
+  bool? showcaseCompleted;
 
   getRole() async {
     isAdmin = await AuthLocalStorage().isRoleAdmin();
+  }
+
+  final GlobalKey key1 = GlobalKey();
+  final key2 = GlobalKey();
+  final key3 = GlobalKey();
+
+  startShowcase() async {
+    final pref = await RootLocalStorgae().getRootPageShowCase();
+    if (pref == false) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+        ShowCaseWidget.of(context).startShowCase(
+          [key1, key2],
+        );
+      });
+    }
   }
 
   @override
   void initState() {
     getRole();
     askForPermission();
-    WidgetsBinding.instance.addPostFrameCallback(
-        (timeStamp) => ShowCaseWidget.of(context).startShowCase([
-              globalKeyOne,
-              globalKeyTwo,
-              globalKeyThree,
-              globalKeyFour,
-              globalKeyFive,
-              globalKeySix
-            ]));
     super.initState();
+    startShowcase();
   }
 
   void askForPermission() async {
@@ -70,62 +80,66 @@ class _RootPageState extends State<RootPage> {
     return Scaffold(
       body: widget.child,
       floatingActionButton: isAdmin == false
-          ? Showcase(
-              key: globalKeyTwo,
-              title: 'Menambahkan Laporan',
-              description:
-                  'Klik tombol ini untuk membuat laporan kerusakan fasilitas',
-              child: FloatingActionButton(
-                onPressed: () async {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return ReportsPage(rootBloc: rootBloc);
-                      });
-                },
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32)),
-                child: const Icon(
-                  Icons.report_sharp,
-                  size: 32,
-                ),
-              ),
+          ? ShowCaseView(
+              globalKey: key2,
+              description: 'Tekan tombol ini untuk membuat laporan',
+              child: Builder(builder: (context) {
+                return FloatingActionButton(
+                  onPressed: () async {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return ReportsPage(
+                            rootBloc: rootBloc,
+                            isAdmin: false,
+                            reportsId: '',
+                          );
+                        });
+                  },
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32)),
+                  child: const Icon(
+                    Icons.report_sharp,
+                    size: 32,
+                  ),
+                );
+              }),
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       resizeToAvoidBottomInset: false,
-      bottomNavigationBar: Showcase(
-        key: globalKeyOne,
-        title: 'Halaman',
-        description:
-            'Halaman beranda untuk menampilkan keseluruhan laporan,\nhalaman laporan untuk menampilkan laporan anda,\nhalaman peringkat untuk menampilkan peringkat anda, \nhalaman profil untuk mengelola akun anda',
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: calculateSelectedIndex(context),
-          onTap: (int index) {
-            setState(() => onItemTapped(index, context));
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Beranda',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.report),
-              label: 'Laporan',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart),
-              label: 'Peringkat',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profil',
-            ),
-          ],
-        ),
+      bottomNavigationBar: ShowCaseView(
+        globalKey: key1,
+        description: 'Klik icon di bawah ini untuk berpindah halaman',
+        child: Builder(builder: (context) {
+          return BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            currentIndex: calculateSelectedIndex(context),
+            onTap: (int index) {
+              setState(() => onItemTapped(index, context));
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Beranda',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.report),
+                label: 'Laporan',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.bar_chart),
+                label: 'Peringkat',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profil',
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

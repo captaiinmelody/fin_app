@@ -127,6 +127,7 @@ class _MyReportsPageState extends State<MyReportsPage>
           itemCount: reportsForStatus.length,
           itemBuilder: (context, index) {
             ReportsModels content = reportsForStatus[index];
+
             return Column(
               children: [
                 ReportsCard(
@@ -138,6 +139,8 @@ class _MyReportsPageState extends State<MyReportsPage>
                   reportsDescription: content.description,
                   imageUrl: content.mediaUrl?.imageUrl,
                   videoUrl: content.mediaUrl?.videoUrl,
+                  fixedImageUrl: content.mediaUrl?.fixedImageUrl,
+                  fixedVideoUrl: content.mediaUrl?.fixedVideoUrl,
                   totalLikes: content.totalLikes,
                   totalComments: content.totalComments,
                   datePublished: content.datePublished,

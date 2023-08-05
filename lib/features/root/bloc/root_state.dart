@@ -22,12 +22,14 @@ class ButtonLoadedState extends RootState {
 class LoadedState extends RootState {
   final String? response;
   final List<ReportsModels>? listOfReportsModels;
+  final List<ReportsModels>? listOfFixedReportsModels;
   final ReportsModels? reportsModelsById;
   final int? counter;
 
   LoadedState({
     this.response,
     this.listOfReportsModels,
+    this.listOfFixedReportsModels,
     this.reportsModelsById,
     this.counter,
   });

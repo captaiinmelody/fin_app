@@ -21,7 +21,14 @@ import 'package:video_player/video_player.dart';
 
 class ReportsPage extends StatefulWidget {
   final RootBloc rootBloc;
-  const ReportsPage({Key? key, required this.rootBloc}) : super(key: key);
+  final bool isAdmin;
+  final String reportsId;
+  const ReportsPage({
+    Key? key,
+    required this.rootBloc,
+    required this.isAdmin,
+    required this.reportsId,
+  }) : super(key: key);
 
   @override
   State<ReportsPage> createState() => _ReportsPageState();
@@ -229,13 +236,21 @@ class _ReportsPageState extends State<ReportsPage> {
               }
               return ElevatedButton(
                 onPressed: () {
-                  widget.rootBloc.add(ReportsEventPost(
-                    description: descriptionController.text,
-                    imageFiles: imageFiles,
-                    videoFiles: videoFiles,
-                    kampus: selectedDropdownItem,
-                    detailLokasi: locationDetailController.text,
-                  ));
+                  if (widget.isAdmin == false) {
+                    widget.rootBloc.add(ReportsEventPost(
+                      description: descriptionController.text,
+                      imageFiles: imageFiles,
+                      videoFiles: videoFiles,
+                      kampus: selectedDropdownItem,
+                      detailLokasi: locationDetailController.text,
+                    ));
+                  } else if (widget.isAdmin == true) {
+                    widget.rootBloc.add(AdminFixingReportsEventPost(
+                        description: descriptionController.text,
+                        imageFiles: imageFiles,
+                        videoFiles: videoFiles,
+                        reportsId: widget.reportsId));
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
@@ -276,14 +291,14 @@ class _ReportsPageState extends State<ReportsPage> {
                     maxLines: null,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'Enter some description...',
+                      hintText: 'Tambahkan deskripsi pelaporan',
                     ),
                   ),
                   if (imageFiles != null || videoFiles != null)
                     displayMedia()
                   else
                     const Text(
-                      "Image or Video is required...",
+                      "Gambar atau Video diperlukan",
                       style: TextStyle(color: Colors.redAccent),
                     ),
                   const SizedBox(height: 24),
@@ -302,22 +317,27 @@ class _ReportsPageState extends State<ReportsPage> {
                       onTakeVideoTap: () async {
                         recordVideoFromCamera();
                       }),
-                  CampusSelection(
-                    isEnabled: false,
-                    onChanged: (selectedValue) {
-                      setState(() {
-                        selectedDropdownItem = selectedValue;
-                      });
-                    },
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    child: AuthForm(
-                      controller: locationDetailController,
-                      labelText: 'Location details...',
-                      prefixIcon: const Icon(Icons.location_on_outlined),
+                  if (widget.isAdmin == false)
+                    Column(
+                      children: [
+                        CampusSelection(
+                          isEnabled: false,
+                          onChanged: (selectedValue) {
+                            setState(() {
+                              selectedDropdownItem = selectedValue;
+                            });
+                          },
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 12),
+                          child: AuthForm(
+                            controller: locationDetailController,
+                            labelText: 'Location details...',
+                            prefixIcon: const Icon(Icons.location_on_outlined),
+                          ),
+                        )
+                      ],
                     ),
-                  )
                 ],
               ),
             ),

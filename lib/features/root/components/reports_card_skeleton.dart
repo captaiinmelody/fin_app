@@ -23,6 +23,7 @@ class ReportsCardSkeleton extends StatelessWidget {
                     Column(
                       children: [
                         skeletonItems(width: 120, height: 24),
+                        const SizedBox(height: 12),
                         skeletonItems(width: 120, height: 24),
                       ],
                     ),

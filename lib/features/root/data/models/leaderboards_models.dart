@@ -9,7 +9,6 @@ class LeaderboardsModels {
   final String? userId;
   final String? profilePhotoUrl;
   final String? username;
-  final int? totalReports;
   final int? badges;
   final int? rank;
 
@@ -18,14 +17,13 @@ class LeaderboardsModels {
     this.userId,
     this.profilePhotoUrl,
     this.username,
-    this.totalReports,
     this.badges,
     this.rank,
   });
 
   @override
   String toString() {
-    return 'LeaderboardsModels(leaderboardsId: $leaderboardsId, userId: $userId, profilePhotoUrl: $profilePhotoUrl, username: $username, badges: $badges, totalReports: $totalReports, rank: $rank)';
+    return 'LeaderboardsModels(leaderboardsId: $leaderboardsId, userId: $userId, profilePhotoUrl: $profilePhotoUrl, username: $username, badges: $badges, rank: $rank)';
   }
 
   factory LeaderboardsModels.fromMap(Map<String, dynamic> data) {
@@ -34,7 +32,6 @@ class LeaderboardsModels {
       userId: data['userId'] as String? ?? "",
       profilePhotoUrl: data['profilePhotoUrl'] as String? ?? "",
       username: data['username'] as String? ?? "",
-      totalReports: data['totalReports'] as int? ?? 0,
       badges: data['badges'] as int? ?? 0,
       rank: data['rank'] as int? ?? 0,
     );
@@ -45,7 +42,6 @@ class LeaderboardsModels {
         'userId': userId ?? "",
         'profilePhotoUrl': profilePhotoUrl ?? "",
         'username': username ?? "",
-        'totalReports': totalReports ?? "",
         'badges': badges ?? 0,
         'rank': rank ?? 0,
       };
@@ -68,7 +64,6 @@ class LeaderboardsModels {
     String? userId,
     String? profilePhotoUrl,
     String? username,
-    int? totalReports,
     int? badges,
     int? rank,
   }) {
@@ -77,7 +72,6 @@ class LeaderboardsModels {
       userId: userId ?? this.userId,
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       username: username ?? this.username,
-      totalReports: totalReports ?? this.totalReports,
       badges: badges ?? this.badges,
       rank: rank ?? this.badges,
     );

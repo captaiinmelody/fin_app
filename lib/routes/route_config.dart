@@ -8,15 +8,16 @@ import 'package:fin_app/features/root/data/datasources/admin_reports_sources.dar
 import 'package:fin_app/features/root/data/datasources/leaderboards_sources.dart';
 import 'package:fin_app/features/root/data/datasources/profile_sources.dart';
 import 'package:fin_app/features/root/data/datasources/report_sources.dart';
+import 'package:fin_app/features/root/data/localstorage/root_local_storage.dart';
 import 'package:fin_app/features/root/root_page.dart';
 import 'package:fin_app/features/root/ui/home/pages/home_page.dart';
 import 'package:fin_app/features/root/ui/leaderboards/pages/leaderboards_page.dart';
 import 'package:fin_app/features/root/ui/my_reports/pages/users/my_reports_page.dart';
 import 'package:fin_app/features/root/ui/profile/pages/profile_page.dart';
-import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_const.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -27,19 +28,6 @@ final GlobalKey<NavigatorState> userNavigatorKey =
 
 final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
     GlobalKey<RefreshIndicatorState>();
-
-final GlobalKey globalKeyOne = GlobalKey();
-final GlobalKey globalKeyTwo = GlobalKey();
-final GlobalKey globalKeyThree = GlobalKey();
-final GlobalKey globalKeyFour = GlobalKey();
-final GlobalKey globalKeyFive = GlobalKey();
-final GlobalKey globalKeySix = GlobalKey();
-final GlobalKey globalKeySeven = GlobalKey();
-final GlobalKey globalKeyEight = GlobalKey();
-final GlobalKey globalKeyNine = GlobalKey();
-final GlobalKey globalKeyTen = GlobalKey();
-final GlobalKey globalKeyEleven = GlobalKey();
-final GlobalKey globalKeyTwelve = GlobalKey();
 
 final AuthRepository _authRepository = AuthRepository();
 final AuthBloc authBloc = AuthBloc(_authRepository);
@@ -84,18 +72,25 @@ class MyRouter {
       ShellRoute(
           navigatorKey: adminNavigatorKey,
           builder: (context, state, child) {
-            return RootPage(
-              child: child,
+            return ShowCaseWidget(
+              onFinish: () async {
+                await RootLocalStorgae().saveRootPageShowCase(true);
+                debugPrint('agus');
+              },
+              builder: Builder(builder: (context) {
+                return RootPage(
+                  child: child,
+                );
+              }),
             );
           },
           routes: <RouteBase>[
             GoRoute(
-              name: MyRouterConstant.homeRouterName,
-              path: '/home',
-              pageBuilder: (context, state) {
-                return MaterialPage(child: HomePage(rootBloc: rootBloc));
-              },
-            ),
+                name: MyRouterConstant.homeRouterName,
+                path: '/home',
+                pageBuilder: (context, state) {
+                  return MaterialPage(child: HomePage(rootBloc: rootBloc));
+                }),
             GoRoute(
               name: MyRouterConstant.profileRouterName,
               path: '/profile',
@@ -107,21 +102,18 @@ class MyRouter {
               name: MyRouterConstant.myReportsRouterName,
               path: '/my-reports',
               pageBuilder: (context, state) {
-                return MaterialPage(child: MyReportsPage(rootBloc: rootBloc));
+                return MaterialPage(
+                  child: MyReportsPage(rootBloc: rootBloc),
+                );
               },
             ),
             GoRoute(
               name: MyRouterConstant.leaderboardsRouterName,
               path: '/leaderboards',
               pageBuilder: (context, state) {
-                return const MaterialPage(child: LeaderboardsPage());
-              },
-            ),
-            GoRoute(
-              name: MyRouterConstant.reportsRouterName,
-              path: '/reports',
-              pageBuilder: (context, state) {
-                return MaterialPage(child: ReportsPage(rootBloc: rootBloc));
+                return MaterialPage(
+                  child: const LeaderboardsPage(),
+                );
               },
             ),
           ]),

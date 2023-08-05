@@ -8,17 +8,27 @@ import 'package:flutter/material.dart';
 class MediaUrl {
   final String? imageUrl;
   final String? videoUrl;
+  final String? fixedImageUrl, fixedVideoUrl;
 
-  const MediaUrl({this.imageUrl, this.videoUrl});
+  const MediaUrl({
+    this.imageUrl,
+    this.videoUrl,
+    this.fixedImageUrl,
+    this.fixedVideoUrl,
+  });
 
   factory MediaUrl.fromMap(Map<String, dynamic> data) => MediaUrl(
         imageUrl: data['imageUrl'] as String? ?? '',
         videoUrl: data['videoUrl'] as String? ?? '',
+        fixedImageUrl: data['fixedImageUrl'] as String? ?? '',
+        fixedVideoUrl: data["fixedVideoUrl"] as String? ?? '',
       );
 
   Map<String, dynamic> toMap() => {
         'imageUrl': imageUrl,
         'videoUrl': videoUrl,
+        'fixedImageUrl': fixedImageUrl,
+        'fixedVideoUrl': fixedVideoUrl,
       };
 
   /// `dart:convert`
@@ -33,13 +43,13 @@ class MediaUrl {
   /// Converts [MediaUrl] to a JSON string.
   String toJson() => json.encode(toMap());
 
-  MediaUrl copyWith({
-    String? imageUrl,
-    String? videoUrl,
-  }) {
+  MediaUrl copyWith(
+      {String? imageUrl, videoUrl, fixedImageUrl, fixedVideoUrl}) {
     return MediaUrl(
       imageUrl: imageUrl ?? this.imageUrl,
       videoUrl: videoUrl ?? this.videoUrl,
+      fixedImageUrl: fixedImageUrl ?? this.fixedImageUrl,
+      fixedVideoUrl: fixedVideoUrl ?? this.fixedVideoUrl,
     );
   }
 

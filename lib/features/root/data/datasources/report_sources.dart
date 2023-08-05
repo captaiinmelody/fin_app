@@ -41,19 +41,6 @@ class ReportsDataSources {
       String leaderboardsId = const Uuid().v1();
       final userId = await AuthLocalStorage().getUserId();
 
-      ReportsModels reports = ReportsModels(
-        userId: userId,
-        reportsId: reportsId,
-        mediaUrl: mediaUrl,
-        description: description,
-        datePublished: DateTime.now(),
-        totalLikes: 0,
-        totalComments: 0,
-        kampus: kampus,
-        detailLokasi: detailLokasi,
-        status: 0,
-      );
-
       DocumentSnapshot userSnapshot =
           await firestore.collection('users').doc(userId).get();
 
@@ -61,19 +48,29 @@ class ReportsDataSources {
         //username fetch from users collection
         String username = userSnapshot.get("username");
         String profilePhotoUrl = userSnapshot.get('profilePhotoUrl');
-        final updatedReports = reports.copyWith(
-            username: username, profilePhotoUrl: profilePhotoUrl);
 
-        //badges fetch from users collection
-        int currentBadges = userSnapshot.get('badges') ?? 0;
-        int newBadges = currentBadges + 1;
+        ReportsModels reports = ReportsModels(
+          username: username,
+          userId: userId,
+          profilePhotoUrl: profilePhotoUrl,
+          reportsId: reportsId,
+          mediaUrl: mediaUrl,
+          description: description,
+          datePublished: DateTime.now(),
+          totalLikes: 0,
+          totalComments: 0,
+          kampus: kampus,
+          detailLokasi: detailLokasi,
+          status: 0,
+        );
 
         //totalReports fetch from users collection
         int currentTotalReports = userSnapshot.get('totalReports') ?? 0;
         int newTotalReports = currentTotalReports + 1;
 
+        int badges = userSnapshot.get('badges');
+
         await firestore.collection('users').doc(userId).update({
-          'badges': newBadges,
           'totalReports': newTotalReports,
           'updatedAt': DateTime.now(),
         });
@@ -81,7 +78,7 @@ class ReportsDataSources {
         await firestore
             .collection('reports')
             .doc(reportsId)
-            .set(updatedReports.toMap());
+            .set(reports.toMap());
 
         //leaderboards models
         LeaderboardsModels leaderboards = LeaderboardsModels(
@@ -89,8 +86,7 @@ class ReportsDataSources {
           userId: userId,
           profilePhotoUrl: profilePhotoUrl,
           username: username,
-          totalReports: newTotalReports,
-          badges: newBadges,
+          badges: badges,
         );
 
         //get leaderboard for checkin if there is already userId in the leaderboards collection
@@ -99,10 +95,7 @@ class ReportsDataSources {
 
         //post to leaderboards collection
         if (leaderboardsSnapshot.exists) {
-          await firestore.collection('leaderboards').doc(userId).update({
-            'badges': newBadges,
-            'totalReports': newTotalReports,
-          });
+          return 'leaderboards already exist';
         } else {
           await firestore
               .collection('leaderboards')
@@ -115,6 +108,84 @@ class ReportsDataSources {
         return 'User document not found';
       }
     } catch (e) {
+      throw e.toString(); // Return error message as String
+    }
+  }
+
+  Future<String> reportsFixed(String? description, File? imageFiles,
+      File? videoFiles, String reportsId) async {
+    try {
+      MediaUrl? mediaUrl;
+      MediaUrl? existingMediaUrl;
+
+      // Fetch the existing mediaUrl from the Firestore document
+      DocumentSnapshot reportSnapshot =
+          await firestore.collection('reports').doc(reportsId).get();
+      if (reportSnapshot.exists) {
+        existingMediaUrl = MediaUrl.fromMap(reportSnapshot.get('mediaUrl'));
+      }
+
+      if (imageFiles != null && videoFiles != null) {
+        String imageUrl = await uploadFile(imageFiles);
+        String videoUrl = await uploadFile(videoFiles);
+        mediaUrl = MediaUrl(
+          imageUrl: existingMediaUrl?.imageUrl, // Keep the existing imageUrl
+          videoUrl: existingMediaUrl?.videoUrl, // Keep the existing videoUrl
+          fixedImageUrl: imageUrl,
+          fixedVideoUrl: videoUrl,
+        );
+      } else if (imageFiles != null) {
+        String imageUrl = await uploadFile(imageFiles);
+        mediaUrl = MediaUrl(
+          imageUrl: existingMediaUrl?.imageUrl, // Keep the existing imageUrl
+          videoUrl: existingMediaUrl?.videoUrl, // Keep the existing videoUrl
+          fixedImageUrl: imageUrl,
+        );
+      } else if (videoFiles != null) {
+        String videoUrl = await uploadFile(videoFiles);
+        mediaUrl = MediaUrl(
+          imageUrl: existingMediaUrl?.imageUrl, // Keep the existing imageUrl
+          videoUrl: existingMediaUrl?.videoUrl, // Keep the existing videoUrl
+          fixedVideoUrl: videoUrl,
+        );
+      }
+
+      final userId = await AuthLocalStorage().getUserId();
+
+      DocumentSnapshot userSnapshot =
+          await firestore.collection('users').doc(userId).get();
+
+      if (userSnapshot.exists) {
+        int currentBadges = userSnapshot.get('badges');
+        int newBadges = currentBadges + 1;
+
+        await firestore.collection('users').doc(userId).update({
+          'badges': newBadges,
+          'updatedAt': DateTime.now(),
+        });
+
+        await firestore.collection('reports').doc(reportsId).update({
+          'status': 2,
+          'mediaUrl':
+              mediaUrl?.toMap(), // Update the mediaUrl field in the document
+        });
+
+        //get leaderboard for checkin if there is already userId in the leaderboards collection
+        DocumentSnapshot leaderboardsSnapshot =
+            await firestore.collection('leaderboards').doc(userId).get();
+
+        //post to leaderboards collection
+        if (leaderboardsSnapshot.exists) {
+          await firestore.collection('leaderboards').doc(userId).update({
+            'badges': newBadges,
+          });
+        }
+        return 'Upload Success';
+      } else {
+        return 'User document not found';
+      }
+    } catch (e) {
+      print("$e");
       throw e.toString(); // Return error message as String
     }
   }
@@ -183,6 +254,17 @@ class ReportsDataSources {
       return reportsModels;
     } catch (e) {
       print('Error fetching ReportsModels: $e');
+      throw Exception("Failed to fetch ReportsModels");
+    }
+  }
+
+  Future<ReportsModels> getFixedReports(String reportsId) async {
+    try {
+      final DocumentSnapshot snapshot =
+          await firestore.collection('fixed_reports').doc(reportsId).get();
+
+      return ReportsModels.fromMap(snapshot.data() as Map<String, dynamic>);
+    } catch (e) {
       throw Exception("Failed to fetch ReportsModels");
     }
   }
