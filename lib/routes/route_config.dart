@@ -41,6 +41,14 @@ final ProfileDataSources profileDataSources = ProfileDataSources();
 final RootBloc rootBloc = RootBloc(adminReportsDataSources, reportsDataSources,
     leaderboardSources, profileDataSources);
 
+final key1 = GlobalKey();
+final key2 = GlobalKey();
+final key3 = GlobalKey();
+final key4 = GlobalKey();
+final key5 = GlobalKey();
+final key6 = GlobalKey();
+final key7 = GlobalKey();
+
 class MyRouter {
   static GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -75,7 +83,7 @@ class MyRouter {
             return ShowCaseWidget(
               onFinish: () async {
                 await RootLocalStorgae().saveRootPageShowCase(true);
-                debugPrint('agus');
+                // debugPrint('agus');
               },
               builder: Builder(builder: (context) {
                 return RootPage(

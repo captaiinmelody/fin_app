@@ -39,10 +39,6 @@ class _RootPageState extends State<RootPage> {
     isAdmin = await AuthLocalStorage().isRoleAdmin();
   }
 
-  final GlobalKey key1 = GlobalKey();
-  final key2 = GlobalKey();
-  final key3 = GlobalKey();
-
   startShowcase() async {
     final pref = await RootLocalStorgae().getRootPageShowCase();
     if (pref == false) {
@@ -58,8 +54,8 @@ class _RootPageState extends State<RootPage> {
   void initState() {
     getRole();
     askForPermission();
-    super.initState();
     startShowcase();
+    super.initState();
   }
 
   void askForPermission() async {
@@ -89,10 +85,18 @@ class _RootPageState extends State<RootPage> {
                     showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return ReportsPage(
-                            rootBloc: rootBloc,
-                            isAdmin: false,
-                            reportsId: '',
+                          return ShowCaseWidget(
+                            onFinish: () async {
+                              await RootLocalStorgae()
+                                  .reportsPageShowCase(true);
+                            },
+                            builder: Builder(builder: (context) {
+                              return ReportsPage(
+                                rootBloc: rootBloc,
+                                isAdmin: false,
+                                reportsId: '',
+                              );
+                            }),
                           );
                         });
                   },

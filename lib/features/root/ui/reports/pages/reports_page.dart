@@ -7,8 +7,11 @@ import 'package:fin_app/features/auth/components/auth_input_components.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/components/display_image.dart';
 import 'package:fin_app/features/root/components/display_video.dart';
+import 'package:fin_app/features/root/components/show_case_view.dart';
+import 'package:fin_app/features/root/data/localstorage/root_local_storage.dart';
 import 'package:fin_app/features/root/ui/reports/components/button_media.dart';
 import 'package:fin_app/features/root/ui/reports/components/campus_selection.dart';
+import 'package:fin_app/routes/route_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +19,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:video_player/video_player.dart';
 // import 'package:path_provider/path_provider.dart' as p;
 
@@ -173,6 +177,18 @@ class _ReportsPageState extends State<ReportsPage> {
     }
   }
 
+  startShowCase() async {
+    final getReportsShowCase =
+        await RootLocalStorgae().getReportsPageShowCase();
+    if (getReportsShowCase == false) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+        ShowCaseWidget.of(context).startShowCase(
+          [key3, key4, key5, key6, key7],
+        );
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -181,6 +197,7 @@ class _ReportsPageState extends State<ReportsPage> {
         currentPage = pageController.page!.round();
       });
     });
+    startShowCase();
   }
 
   @override
@@ -234,31 +251,37 @@ class _ReportsPageState extends State<ReportsPage> {
                       color: AppColors.primaryColor, size: 20),
                 );
               }
-              return ElevatedButton(
-                onPressed: () {
-                  if (widget.isAdmin == false) {
-                    widget.rootBloc.add(ReportsEventPost(
-                      description: descriptionController.text,
-                      imageFiles: imageFiles,
-                      videoFiles: videoFiles,
-                      kampus: selectedDropdownItem,
-                      detailLokasi: locationDetailController.text,
-                    ));
-                  } else if (widget.isAdmin == true) {
-                    widget.rootBloc.add(AdminFixingReportsEventPost(
-                        description: descriptionController.text,
-                        imageFiles: imageFiles,
-                        videoFiles: videoFiles,
-                        reportsId: widget.reportsId));
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                ),
-                child: const Text(
-                  'Report',
-                  style: TextStyle(color: Colors.white),
-                ),
+              return ShowCaseView(
+                globalKey: key7,
+                description: 'Tekan tombol ini untuk melakukan laporan',
+                child: Builder(builder: (context) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      if (widget.isAdmin == false) {
+                        widget.rootBloc.add(ReportsEventPost(
+                          description: descriptionController.text,
+                          imageFiles: imageFiles,
+                          videoFiles: videoFiles,
+                          kampus: selectedDropdownItem,
+                          detailLokasi: locationDetailController.text,
+                        ));
+                      } else if (widget.isAdmin == true) {
+                        widget.rootBloc.add(AdminFixingReportsEventPost(
+                            description: descriptionController.text,
+                            imageFiles: imageFiles,
+                            videoFiles: videoFiles,
+                            reportsId: widget.reportsId));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                    ),
+                    child: const Text(
+                      'Report',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }),
               );
             },
           ),
@@ -286,13 +309,20 @@ class _ReportsPageState extends State<ReportsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
-                    controller: descriptionController,
-                    maxLines: null,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Tambahkan deskripsi pelaporan',
-                    ),
+                  ShowCaseView(
+                    globalKey: key3,
+                    description:
+                        'Tambahkan deskripsi pelaporan seperti kondisi kerusakan, tingkat urgensi, dll',
+                    child: Builder(builder: (context) {
+                      return TextField(
+                        controller: descriptionController,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Tambahkan deskripsi pelaporan',
+                        ),
+                      );
+                    }),
                   ),
                   if (imageFiles != null || videoFiles != null)
                     displayMedia()
@@ -302,39 +332,61 @@ class _ReportsPageState extends State<ReportsPage> {
                       style: TextStyle(color: Colors.redAccent),
                     ),
                   const SizedBox(height: 24),
-                  ButtonMedia(
-                      imageFile: imageFiles,
-                      videoFile: videoFiles,
-                      onSelectImageTap: () {
-                        selectImage();
-                      },
-                      onSelectVideoTap: () {
-                        selectVideo();
-                      },
-                      onTakeImageTap: () async {
-                        pickImageFromCamera();
-                      },
-                      onTakeVideoTap: () async {
-                        recordVideoFromCamera();
-                      }),
+                  ShowCaseView(
+                    globalKey: key4,
+                    description:
+                        'Tambahkan gambar atau video untuk memperjelas pelaporan',
+                    child: Builder(builder: (context) {
+                      return ButtonMedia(
+                          imageFile: imageFiles,
+                          videoFile: videoFiles,
+                          onSelectImageTap: () {
+                            selectImage();
+                          },
+                          onSelectVideoTap: () {
+                            selectVideo();
+                          },
+                          onTakeImageTap: () async {
+                            pickImageFromCamera();
+                          },
+                          onTakeVideoTap: () async {
+                            recordVideoFromCamera();
+                          });
+                    }),
+                  ),
                   if (widget.isAdmin == false)
                     Column(
                       children: [
-                        CampusSelection(
-                          isEnabled: false,
-                          onChanged: (selectedValue) {
-                            setState(() {
-                              selectedDropdownItem = selectedValue;
-                            });
-                          },
+                        ShowCaseView(
+                          globalKey: key5,
+                          description:
+                              'Pilih di kampus mana kerusakan fasilitas terjadi',
+                          child: Builder(builder: (context) {
+                            return CampusSelection(
+                              isEnabled: false,
+                              onChanged: (selectedValue) {
+                                setState(() {
+                                  selectedDropdownItem = selectedValue;
+                                });
+                              },
+                            );
+                          }),
                         ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 12),
-                          child: AuthForm(
-                            controller: locationDetailController,
-                            labelText: 'Location details...',
-                            prefixIcon: const Icon(Icons.location_on_outlined),
-                          ),
+                        ShowCaseView(
+                          globalKey: key6,
+                          description:
+                              'Tambahkan lokasi spesifik dari fasilitas yang rusak seperti nama gedung, lantai, ruangan, dll.',
+                          child: Builder(builder: (context) {
+                            return Container(
+                              margin: const EdgeInsets.only(top: 12),
+                              child: AuthForm(
+                                controller: locationDetailController,
+                                labelText: 'Location details...',
+                                prefixIcon:
+                                    const Icon(Icons.location_on_outlined),
+                              ),
+                            );
+                          }),
                         )
                       ],
                     ),
