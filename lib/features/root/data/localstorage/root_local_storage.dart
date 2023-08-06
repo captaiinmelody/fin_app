@@ -56,6 +56,12 @@ class RootLocalStorgae {
     return reportsPageShowCase;
   }
 
+  Future<bool> adminReportsPageShowCase(bool adminReportsPageShowCase) async {
+    final pref = await SharedPreferences.getInstance();
+    await pref.setBool('adminReportsPageShowCase', adminReportsPageShowCase);
+    return adminReportsPageShowCase;
+  }
+
   Future<bool> getRootPageShowCase() async {
     final pref = await SharedPreferences.getInstance();
     return pref.getBool('rootPageShowCase') ?? false;
@@ -79,5 +85,10 @@ class RootLocalStorgae {
   Future<bool> getReportsPageShowCase() async {
     final pref = await SharedPreferences.getInstance();
     return pref.getBool('reportsPageShowCase') ?? false;
+  }
+
+  Future<bool> getAdminReportsPageShowCase() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.getBool('adminReportsPageShowCase') ?? false;
   }
 }

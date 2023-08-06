@@ -20,12 +20,11 @@ class MyReportsPage extends StatefulWidget {
 class _MyReportsPageState extends State<MyReportsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool? isAdmin;
+  bool? currentIsAdmin;
 
   @override
   void initState() {
-    getRole();
-    fetchData();
+    initRoleData();
     _tabController = TabController(length: 3, vsync: this);
     super.initState();
   }
@@ -36,12 +35,21 @@ class _MyReportsPageState extends State<MyReportsPage>
     super.dispose();
   }
 
-  void getRole() async {
-    isAdmin = await AuthLocalStorage().isRoleAdmin();
+  Future<void> initRoleData() async {
+    await getRole();
+
+    fetchData();
+  }
+
+  Future<void> getRole() async {
+    final isAdmin = await AuthLocalStorage().isRoleAdmin();
+    setState(() {
+      currentIsAdmin = isAdmin;
+    });
   }
 
   Future<void> fetchData() async {
-    if (isAdmin == false) {
+    if (currentIsAdmin == false) {
       context.read<RootBloc>().add(ReportsEventGetByUserId());
     } else {
       context.read<RootBloc>().add(ReportsEventGet());
@@ -127,7 +135,6 @@ class _MyReportsPageState extends State<MyReportsPage>
           itemCount: reportsForStatus.length,
           itemBuilder: (context, index) {
             ReportsModels content = reportsForStatus[index];
-
             return Column(
               children: [
                 ReportsCard(
@@ -146,7 +153,7 @@ class _MyReportsPageState extends State<MyReportsPage>
                   datePublished: content.datePublished,
                   status: content.status,
                   isHomePage: false,
-                  isAdmin: isAdmin ?? false,
+                  isAdmin: currentIsAdmin ?? false,
                 ),
                 const Divider(),
               ],

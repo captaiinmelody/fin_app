@@ -51,6 +51,7 @@ class LeaderboardsCards extends StatelessWidget {
               Text(badges == null ? "x0" : "x${badges ?? ''}",
                   style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 12.0),
+              const Icon(Icons.military_tech_rounded)
             ],
           )
         ],

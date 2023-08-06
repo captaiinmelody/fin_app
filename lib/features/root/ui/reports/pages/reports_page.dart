@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/features/auth/components/auth_input_components.dart';
+import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/components/display_image.dart';
 import 'package:fin_app/features/root/components/display_video.dart';
@@ -180,12 +181,45 @@ class _ReportsPageState extends State<ReportsPage> {
   startShowCase() async {
     final getReportsShowCase =
         await RootLocalStorgae().getReportsPageShowCase();
+
     if (getReportsShowCase == false) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
         ShowCaseWidget.of(context).startShowCase(
           [key3, key4, key5, key6, key7],
         );
       });
+    }
+  }
+
+  adminStartShowCase() async {
+    final getAdminReportsShowCase =
+        await RootLocalStorgae().getAdminReportsPageShowCase();
+
+    if (getAdminReportsShowCase == false) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+        ShowCaseWidget.of(context).startShowCase(
+          [key3, key4, key5, key6, key7],
+        );
+      });
+    }
+  }
+
+  bool? currentIsAdmin;
+
+  getRole() async {
+    final isAdmin = await AuthLocalStorage().isRoleAdmin();
+    setState(() {
+      currentIsAdmin = isAdmin;
+    });
+  }
+
+  initGetRole() async {
+    await getRole();
+
+    if (currentIsAdmin == true) {
+      adminStartShowCase();
+    } else {
+      startShowCase();
     }
   }
 
@@ -197,7 +231,7 @@ class _ReportsPageState extends State<ReportsPage> {
         currentPage = pageController.page!.round();
       });
     });
-    startShowCase();
+    initGetRole();
   }
 
   @override

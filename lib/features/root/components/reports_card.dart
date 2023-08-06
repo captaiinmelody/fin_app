@@ -2,11 +2,13 @@ import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/features/auth/components/auth_button_component.dart';
 import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/components/display_media.dart';
+import 'package:fin_app/features/root/data/localstorage/root_local_storage.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:video_player/video_player.dart';
 
 @immutable
@@ -23,12 +25,9 @@ class ReportsCard extends StatefulWidget {
       videoUrl,
       fixedImageUrl,
       fixedVideoUrl;
-  final int? totalLikes;
-  final int? totalComments;
+  final int? totalLikes, totalComments, status;
   final DateTime? datePublished;
-  final int? status;
-  final bool isHomePage;
-  final bool isAdmin;
+  final bool isHomePage, isAdmin;
 
   final Function()? onLikeTap, onCommentTap, viewImage;
 
@@ -374,10 +373,25 @@ class _ReportsCardState extends State<ReportsCard> {
                                       showDialog(
                                         context: context,
                                         builder: (context) {
-                                          return ReportsPage(
-                                            rootBloc: rootBloc,
-                                            isAdmin: widget.isAdmin,
-                                            reportsId: widget.reportsId!,
+                                          return ShowCaseWidget(
+                                            onComplete: (p0, p1) async {
+                                              if (p0 == 1) {
+                                                final agus =
+                                                    await RootLocalStorgae()
+                                                        .adminReportsPageShowCase(
+                                                            true);
+                                                debugPrint(agus.toString());
+                                              }
+                                            },
+                                            onFinish: () async {},
+                                            builder:
+                                                Builder(builder: (context) {
+                                              return ReportsPage(
+                                                rootBloc: rootBloc,
+                                                isAdmin: widget.isAdmin,
+                                                reportsId: widget.reportsId!,
+                                              );
+                                            }),
                                           );
                                         },
                                       );

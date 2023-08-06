@@ -32,11 +32,20 @@ class _RootPageState extends State<RootPage> {
     MyRouterConstant.profileRouterName,
   ];
 
-  bool? isAdmin;
+  bool? currentIsAdmin;
   bool? showcaseCompleted;
 
+  Future<void> initRoleData() async {
+    await getRole();
+
+    startShowcase();
+  }
+
   getRole() async {
-    isAdmin = await AuthLocalStorage().isRoleAdmin();
+    final isAdmin = await AuthLocalStorage().isRoleAdmin();
+    setState(() {
+      currentIsAdmin = isAdmin;
+    });
   }
 
   startShowcase() async {
@@ -52,9 +61,8 @@ class _RootPageState extends State<RootPage> {
 
   @override
   void initState() {
-    getRole();
     askForPermission();
-    startShowcase();
+    initRoleData();
     super.initState();
   }
 
@@ -75,7 +83,7 @@ class _RootPageState extends State<RootPage> {
     // Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: widget.child,
-      floatingActionButton: isAdmin == false
+      floatingActionButton: currentIsAdmin == false
           ? ShowCaseView(
               globalKey: key2,
               description: 'Tekan tombol ini untuk membuat laporan',
@@ -87,8 +95,9 @@ class _RootPageState extends State<RootPage> {
                         builder: (BuildContext context) {
                           return ShowCaseWidget(
                             onFinish: () async {
-                              await RootLocalStorgae()
+                              final agus = await RootLocalStorgae()
                                   .reportsPageShowCase(true);
+                              debugPrint(agus.toString());
                             },
                             builder: Builder(builder: (context) {
                               return ReportsPage(
