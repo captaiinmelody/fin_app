@@ -2,71 +2,71 @@ part of 'root_bloc.dart';
 
 abstract class RootEvent {}
 
-class HomeEvent extends RootEvent {}
+class GetProfileEvent extends RootEvent {}
 
-class ProfileEventGetUser extends RootEvent {}
+class GetReportsEvent extends RootEvent {
+  final String page, role;
+  final String? campus, reportsId;
+  GetReportsEvent(
+    this.role,
+    this.page, {
+    this.campus,
+    this.reportsId,
+  });
+}
 
-//reports event
-class ReportsEventPost extends RootEvent {
-  final String? description;
-  final File? imageFiles;
+class CreateReportsEvent extends RootEvent {
+  final String? description, kampus, detailLokasi;
+  final List<File?>? imageFiles;
   final File? videoFiles;
-  final String? kampus;
-  final String? detailLokasi;
-  ReportsEventPost({
+  CreateReportsEvent({
     this.description,
-    this.imageFiles,
-    this.videoFiles,
     this.kampus,
     this.detailLokasi,
+    this.imageFiles,
+    this.videoFiles,
   });
 }
 
-class ReportsEventGet extends RootEvent {}
-
-class ReportsEventGetByUserId extends RootEvent {}
-
-class ReportsEventUpdateCounter extends RootEvent {
-  final String? reportsId;
-  final String? counter;
-  ReportsEventUpdateCounter({
+class ConfirmingReportsEvent extends RootEvent {
+  final String reportsId, status, targetRole;
+  ConfirmingReportsEvent(
     this.reportsId,
-    this.counter,
-  });
+    this.status,
+    this.targetRole,
+  );
 }
 
-class LeaderboardsEvent extends RootEvent {}
-
-class LeaderboardsEventGetByUserId extends RootEvent {}
-
-//admin event
-class AdminConfirmingReportsEvent extends RootEvent {
+class DeleteReportsEvent extends RootEvent {
   final String reportsId;
-  AdminConfirmingReportsEvent(this.reportsId);
+  DeleteReportsEvent(this.reportsId);
 }
 
-class AdminFixingReportsEventPost extends RootEvent {
+class ConfirmingFixingEvent extends RootEvent {
   final MediaUrl? mediaUrl;
   final String reportsId;
   final String? description;
-  final File? imageFiles;
+  final List<File?>? imageFiles;
   final File? videoFiles;
-
-  AdminFixingReportsEventPost({
-    this.mediaUrl,
-    required this.reportsId,
-    this.description,
-    this.imageFiles,
-    this.videoFiles,
-  });
-}
-
-class AdminFixingReportsEventGet extends RootEvent {
-  final String reportsId;
-  AdminFixingReportsEventGet(this.reportsId);
+  ConfirmingFixingEvent(
+      {this.mediaUrl,
+      required this.reportsId,
+      this.description,
+      this.imageFiles,
+      this.videoFiles});
 }
 
 class ButtonEvent extends RootEvent {
   final bool? isClicked;
   ButtonEvent(this.isClicked);
+}
+
+class GetReportsDetailEvent extends RootEvent {
+  final String reportsId;
+  GetReportsDetailEvent(this.reportsId);
+}
+
+class GetNotificationHistoryEvent extends RootEvent {
+  final String userId;
+  GetNotificationHistoryEvent(this.userId);
 }

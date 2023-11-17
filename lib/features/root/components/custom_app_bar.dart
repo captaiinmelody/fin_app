@@ -25,36 +25,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
             borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(12),
                 bottomRight: Radius.circular(12))),
-        child: widget.child
-        // Column(
-        //   children: [
-        //     Row(
-        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //       children: [
-        //         Text(
-        //           'FIN APP',
-        //           style: TextStyles.titleText.copyWith(
-        //               color: Colors.white,
-        //               fontSize: 28,
-        //               fontWeight: FontWeight.bold),
-        //         ),
-        //         GestureDetector(
-        //           onTap: () {
-        //             setState(() {
-        //               AuthLocalStorage().removeToken();
-        //               GoRouter.of(context)
-        //                   .goNamed(MyRouterConstant.rootRouterName);
-        //             });
-        //           },
-        //           child: const Icon(
-        //             Icons.logout_outlined,
-        //             color: Colors.white,
-        //           ),
-        //         )
-        //       ],
-        //     ),
-        //   ],
-        // ),
-        );
+        child: widget.child);
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,7 @@ class LeaderboardsModels {
   final String? username;
   final int? badges;
   final int? rank;
+  final DateTime? createdAt, updatedAt;
 
   const LeaderboardsModels({
     this.leaderboardsId,
@@ -19,6 +21,8 @@ class LeaderboardsModels {
     this.username,
     this.badges,
     this.rank,
+    this.createdAt,
+    this.updatedAt,
   });
 
   @override
@@ -34,6 +38,12 @@ class LeaderboardsModels {
       username: data['username'] as String? ?? "",
       badges: data['badges'] as int? ?? 0,
       rank: data['rank'] as int? ?? 0,
+      createdAt: data['createdAt'] == null
+          ? null
+          : (data['createdAt'] as Timestamp).toDate(),
+      updatedAt: data['updatedAt'] == null
+          ? null
+          : (data['updatedAt'] as Timestamp).toDate(),
     );
   }
 
@@ -44,6 +54,8 @@ class LeaderboardsModels {
         'username': username ?? "",
         'badges': badges ?? 0,
         'rank': rank ?? 0,
+        'createdAt': createdAt ?? DateTime.now(),
+        'updatedAt': updatedAt ?? DateTime.now()
       };
 
   /// `dart:convert`
@@ -66,6 +78,8 @@ class LeaderboardsModels {
     String? username,
     int? badges,
     int? rank,
+    DateTime? createdAt,
+    updatedAt,
   }) {
     return LeaderboardsModels(
       leaderboardsId: leaderboardsId ?? this.leaderboardsId,

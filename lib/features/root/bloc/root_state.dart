@@ -5,61 +5,84 @@ abstract class RootState {}
 
 class InitialState extends RootState {}
 
-class LoadingState extends RootState {
-  final List<ReportsModels>? reportsModels;
-  LoadingState({
-    this.reportsModels,
+class HomeState extends RootState {
+  final bool isLoading, isError;
+  final List<ReportsModel>? reportsData;
+  final String? message;
+  HomeState({
+    required this.isLoading,
+    required this.isError,
+    this.reportsData,
+    this.message,
   });
 }
 
-class ButtonLoadingState extends RootState {}
-
-class ButtonLoadedState extends RootState {
-  final bool? isClicked;
-  ButtonLoadedState(this.isClicked);
-}
-
-class LoadedState extends RootState {
-  final String? response;
-  final List<ReportsModels>? listOfReportsModels;
-  final List<ReportsModels>? listOfFixedReportsModels;
-  final ReportsModels? reportsModelsById;
-  final int? counter;
-
-  LoadedState({
-    this.response,
-    this.listOfReportsModels,
-    this.listOfFixedReportsModels,
-    this.reportsModelsById,
-    this.counter,
+class ReportsState extends RootState {
+  final bool isLoading, isError;
+  final List<ReportsModel>? reportsData;
+  final String? message;
+  final ButtonState? buttonState;
+  ReportsState({
+    required this.isLoading,
+    required this.isError,
+    this.reportsData,
+    this.message,
+    this.buttonState,
   });
 }
 
-class LeaderboardsLoadedState extends RootState {
-  final List<LeaderboardsModels>? listOfLeaderboardsModels;
-  final LeaderboardsModels? leaderboardsModels;
-  LeaderboardsLoadedState({
-    this.listOfLeaderboardsModels,
-    this.leaderboardsModels,
-  });
-}
-
-class ProfileLoadedState extends RootState {
-  final UserResponseModels? userResponseModels;
-
-  ProfileLoadedState({
+class ProfileState extends RootState {
+  final UserModel? userResponseModels;
+  final bool isLoading, isError;
+  final String? message;
+  ProfileState({
     this.userResponseModels,
+    required this.isLoading,
+    required this.isError,
+    this.message,
   });
 }
 
-class AdminLoadedState extends RootState {
-  final ReportsModels? reportsModels;
-  AdminLoadedState({this.reportsModels});
+class CreateReportsState extends RootState {
+  final bool isLoading, isError;
+  final String? message;
+  CreateReportsState({
+    required this.isLoading,
+    required this.isError,
+    this.message,
+  });
 }
 
-class ErrorState extends RootState {
-  final String message;
-  ErrorState({
-    required this.message,
+class ReportsDetailState extends RootState {
+  final ReportsModel reportsModel;
+  ReportsDetailState(this.reportsModel);
+}
+
+class NotificationState extends RootState {
+  final bool isLoading, isError;
+  final String? message;
+  final List<NotificationModels>? listNotification;
+  NotificationState({
+    required this.isLoading,
+    required this.isError,
+    this.message,
+    this.listNotification,
+  });
+}
+
+class NotificationDetailLoadedState extends RootState {
+  NotificationDetailLoadedState(this.reportsModel);
+  final ReportsModel? reportsModel;
+}
+
+class ButtonState extends RootState {
+  final bool isLoading, isError, isClicked;
+  final String? message, status;
+  ButtonState({
+    required this.isLoading,
+    required this.isError,
+    required this.isClicked,
+    this.message,
+    this.status,
   });
 }

@@ -6,15 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class DisplayMedia extends StatefulWidget {
-  final String? imageUrl;
+  final List<String?>? imageUrls;
   final String? videoUrl;
   final DataSourceType? dataSourceType;
+  final Function(int)? removeImage;
+  final Function()? removeVideo;
+  final bool showButtonRemove;
   const DisplayMedia({
-    super.key,
-    this.imageUrl,
+    Key? key,
+    this.imageUrls,
     this.videoUrl,
     this.dataSourceType,
-  });
+    this.removeImage,
+    this.removeVideo,
+    this.showButtonRemove = false,
+  }) : super(key: key);
 
   @override
   State<DisplayMedia> createState() => _DisplayMediaState();
@@ -41,78 +47,89 @@ class _DisplayMediaState extends State<DisplayMedia> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.26,
-      width: MediaQuery.of(context).size.width,
-      child: Stack(
-        children: [
-          PageView(
+    final mediaCount = widget.imageUrls?.length ?? 0;
+    final hasVideo = widget.videoUrl != null && widget.videoUrl!.isNotEmpty;
+    if (mediaCount == 0 && !hasVideo) {
+      return const Text(
+        "Sertakan Gambar atau Video dalam pelaporan!\nAnda dapat memasukkan 3 gambar dan satu video atau salah satu.",
+        style: TextStyle(color: Colors.redAccent, fontSize: 16),
+      );
+    }
+    return Column(
+      children: [
+        Container(
+          height: MediaQuery.of(context).size.height * 0.26,
+          width: MediaQuery.of(context).size.width,
+          margin: const EdgeInsets.only(bottom: 12),
+          child: PageView.builder(
             controller: pageController,
-            children: [
-              if (widget.imageUrl != null && widget.imageUrl != '')
-                GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => PopupImage(
-                        imageUrl: widget.imageUrl,
-                        dataSourceType: widget.dataSourceType,
-                      ),
-                    );
-                  },
-                  child: DisplayImage(
-                      url: widget.imageUrl!,
-                      dataSourceType: widget.dataSourceType!),
-                ),
-              if (widget.videoUrl != null && widget.videoUrl != '')
-                DisplayVideo(
+            itemCount: mediaCount + (hasVideo ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < mediaCount) {
+                return GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => PopupImage(
+                          imageUrl: widget.imageUrls?[index],
+                          dataSourceType: widget.dataSourceType,
+                        ),
+                      );
+                    },
+                    child: DisplayImage(
+                      url: widget.imageUrls![index]!,
+                      dataSourceType: widget.dataSourceType!,
+                      showButtonRemove: widget.showButtonRemove,
+                      onPressed: () {
+                        widget.removeImage!(index);
+                      },
+                    ));
+              } else if (hasVideo && index == mediaCount) {
+                return DisplayVideo(
                   url: widget.videoUrl!,
                   dataSourceType: widget.dataSourceType!,
-                ),
-            ],
+                  onPressed: widget.removeVideo,
+                );
+              }
+              return Container();
+            },
             onPageChanged: (index) {
-              setState(() {}); // Update the page indicator
+              setState(() {
+                currentPage = index;
+              });
             },
           ),
-          if (widget.imageUrl != null &&
-              widget.imageUrl != '' &&
-              widget.videoUrl != null &&
-              widget.videoUrl != '')
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 10,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: buildPageIndicator(),
-              ),
-            ),
-        ],
-      ),
+        ),
+        if (mediaCount > 1)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: buildPageIndicator(),
+          ),
+      ],
     );
   }
 
   List<Widget> buildPageIndicator() {
+    final mediaCount = widget.imageUrls?.length ?? 0;
+    final hasVideo = widget.videoUrl != null && widget.videoUrl!.isNotEmpty;
     List<Widget> indicators = [];
 
-    for (int i = 0; i < 2; i++) {
-      indicators.add(
-        Container(
-          width: 8.0,
-          height: 8.0,
-          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: i == currentPage ? AppColors.primaryColor : Colors.black45,
+    if (mediaCount + (hasVideo ? 1 : 0) > 0) {
+      for (int i = 0; i < mediaCount + (hasVideo ? 1 : 0); i++) {
+        indicators.add(
+          Container(
+            width: 8.0,
+            height: 8.0,
+            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: i == currentPage ? AppColors.primaryColor : Colors.black45,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
-    return indicators;
-  }
 
-  bool shouldDisplayPageIndicator() {
-    return (widget.imageUrl != null && widget.imageUrl != '') ||
-        (widget.videoUrl != null && widget.videoUrl != '');
+    return indicators;
   }
 }

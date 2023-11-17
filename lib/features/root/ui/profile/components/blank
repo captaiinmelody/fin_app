@@ -1,0 +1,8 @@
+CustomButton(
+  textButton: "Login",
+  onTap: () {
+    widget.authBloc.add(LoginEvent(
+      emailController!.text,
+      passwordController!.text,
+    ));
+  });

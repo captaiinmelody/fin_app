@@ -15,4 +15,7 @@ class MyRouterConstant {
 
   //child
   static const String reportsRouterName = 'reports';
+  static const String reportsDetailRouterName = 'reports-detail';
+  static const String notificationRouterName = 'notification';
+  static const String notificationDetailRouterName = 'notification-detail';
 }

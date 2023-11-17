@@ -62,6 +62,17 @@ class RootLocalStorgae {
     return adminReportsPageShowCase;
   }
 
+  Future<bool> myReportsPageSC(bool myReportsPageSC) async {
+    final pref = await SharedPreferences.getInstance();
+    await pref.setBool('myReportsPageSC', myReportsPageSC);
+    return myReportsPageSC;
+  }
+
+  Future<bool> getmyReportsPageSC() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.getBool('myReportsPageSC') ?? false;
+  }
+
   Future<bool> getRootPageShowCase() async {
     final pref = await SharedPreferences.getInstance();
     return pref.getBool('rootPageShowCase') ?? false;

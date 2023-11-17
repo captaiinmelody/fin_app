@@ -10,23 +10,21 @@ class HideableAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      pinned: false,
-      floating: true,
-      snap: true,
-      toolbarHeight: height ?? 56,
-      backgroundColor: AppColors.primaryColor,
-      actions: icon,
-      centerTitle: true,
-      expandedHeight: 80,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12))),
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(bottom: 24),
+        pinned: false,
+        floating: true,
+        snap: true,
+        toolbarHeight: height ?? 56,
+        backgroundColor: AppColors.primaryColor,
+        actions: icon,
         centerTitle: true,
-        title: child,
-      ),
-    );
+        expandedHeight: 80,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(12),
+                bottomRight: Radius.circular(12))),
+        flexibleSpace: FlexibleSpaceBar(
+            titlePadding: const EdgeInsets.only(bottom: 24),
+            centerTitle: true,
+            title: child!));
   }
 }

@@ -1,6 +1,6 @@
 import 'package:fin_app/features/auth/data/datasources/auth_sources.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
-import 'package:fin_app/features/auth/data/models/response/user_response_models.dart';
+import 'package:fin_app/features/auth/data/models/user_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'auth_event.dart';
@@ -13,151 +13,171 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$');
 
     on<LoginEvent>((event, emit) async {
-      emit(LoadingState());
-      try {
-        List<String> missingFields = [];
-        if (event.email == '') {
-          missingFields.add("Email");
-        }
-        if (event.password == '') {
-          missingFields.add("Password");
-        }
-        String combinedMessage = "${missingFields.join(", ")} cannot be empty";
-
-        if (event.email != '' && event.password != '') {
-          if (!emailRegex.hasMatch(event.email!)) {
-            emit(ErrorState(
-                message:
-                    "Please enter the correct email example: asd@gmail.com"));
-          } else if (event.password!.length <= 5) {
-            emit(ErrorState(
-                message: "Password should be at least 6 characters"));
-          } else {
+      if (event.email == "" && event.password == "") {
+        emit(LoginState(
+            isLoading: false,
+            isError: true,
+            message: 'Email dan Password harus diisi!'));
+      } else if (event.email != "") {
+        if (!emailRegex.hasMatch(event.email!)) {
+          emit(LoginState(
+              isLoading: false, isError: true, message: 'Format email salah.'));
+        } else if (event.password == "") {
+          emit(LoginState(
+              isLoading: false,
+              isError: true,
+              message: 'Password harus diisi!'));
+        } else {
+          emit(LoginState(isLoading: true, isError: false));
+          try {
             final user =
                 await authRepository.login(event.email!, event.password!);
             final userToken = user!.token;
             final userId = user.id;
             await AuthLocalStorage().saveToken(userToken);
             await AuthLocalStorage().saveUserId(userId);
-            emit(AuthenticatedState(userToken));
+            emit(
+                LoginState(isLoading: false, isError: false, token: userToken));
+
+            authRepository.loginDebug(user);
+          } catch (e) {
+            if (e is AuthException) {
+              if (e.message!.startsWith("The password")) {
+                emit(LoginState(
+                    isLoading: false,
+                    isError: true,
+                    message: "Password yang anda masukkan salah, coba lagi"));
+              } else if (e.message!.startsWith("There is no user")) {
+                emit(LoginState(
+                    isLoading: false,
+                    isError: true,
+                    message:
+                        "Akun anda tidak ditemukan, cek kembali email anda"));
+              } else {
+                emit(LoginState(
+                    isLoading: false,
+                    isError: true,
+                    message: e.message.toString()));
+              }
+            } else {
+              emit(LoginState(
+                  isLoading: false,
+                  isError: true,
+                  message: 'Login gagal, silahkan coba lagi.'));
+            }
           }
-        } else {
-          emit(ErrorState(message: combinedMessage));
         }
-      } catch (e) {
-        if (e is AuthException) {
-          emit(ErrorState(message: e.toString())); // Emit the error message
-        } else {
-          emit(ErrorState(message: 'Login failed. Please try again.'));
-        }
+      } else {
+        emit(LoginState(
+            isLoading: false, isError: true, message: 'Email harus diisi!.'));
       }
     });
 
     on<RegisterEvent>((event, emit) async {
-      emit(LoadingState());
+      emit(RegisterState(isLoading: true, isError: false, message: ""));
 
       List<String> missingFields = [];
-      if (event.username == '') {
+      bool validationMet = true;
+
+      if (event.username == "") {
         missingFields.add("Username");
+        validationMet = false;
       }
-      if (event.email == '') {
+      if (event.email == "") {
         missingFields.add("Email");
+        validationMet = false;
       }
-      if (event.password == '') {
+      if (event.password == "") {
         missingFields.add("Password");
+        validationMet = false;
       }
-      if (event.confPassword == '') {
+      if (event.confPassword == "") {
         missingFields.add("Confirm Password");
-      }
-      if (event.confPassword == '') {
-        missingFields.add("Confirm Password");
+        validationMet = false;
       }
 
-      String combinedMessage = "${missingFields.join(", ")} cannot be empty";
+      String combinedMessage = "${missingFields.join(", ")} Tidak Boleh Kosong";
 
-      if (event.username != "" &&
-          event.email != "" &&
-          event.password != '' &&
-          event.confPassword != '') {
-        if (!emailRegex.hasMatch(event.email!)) {
-          emit(ErrorState(
-              message:
-                  "Please enter the correct email example: asd@gmail.com"));
-        } else if (event.password!.length <= 5) {
-          emit(ErrorState(message: "Password should be at least 6 characters"));
+      if (validationMet) {
+        if (!emailRegex.hasMatch(event.email)) {
+          emit(RegisterState(
+            isLoading: false,
+            isError: true,
+            message: "Masukkan email yang valid, contoh: asd@gmail.com",
+          ));
+        } else if (event.jabatan.isEmpty) {
+          emit(RegisterState(
+            isLoading: false,
+            isError: true,
+            message: "Pilih salah satu jabatan",
+          ));
+        } else if (event.password.length <= 5) {
+          emit(RegisterState(
+            isLoading: false,
+            isError: true,
+            message: "Password tidak boleh kurang dari 6 karakter",
+          ));
         } else if (event.password != event.confPassword) {
-          emit(ErrorState(
-              message: "Password and Confirm Pssword should be the same!"));
+          emit(RegisterState(
+            isLoading: false,
+            isError: true,
+            message: "Password and Confirm Password tidak sama",
+          ));
         } else {
           try {
+            final UserModel userModels = UserModel(
+              username: event.username,
+              email: event.email,
+              jabatan: event.jabatan,
+              nim: event.nim,
+            );
             final response = await authRepository.register(
-                event.email!,
-                event.password!,
-                UserResponseModels(
-                  username: event.username,
-                  email: event.email,
-                ));
+              email: event.email,
+              password: event.password,
+              userModels: userModels,
+            );
+
             if (response) {
-              emit(RegistrationCompleteState(
-                  "Registered success! You can login now."));
+              emit(RegisterState(
+                isLoading: false,
+                isError: false,
+                message:
+                    "Registrasi berhasil! Lakukan login untuk masuk ke dalam sistem.",
+              ));
+
+              authRepository.registerDebug(userModels);
             } else {
-              emit(ErrorState(
-                  message: "Username already exist, try different one"));
+              emit(RegisterState(
+                isLoading: false,
+                isError: true,
+                message: "Email anda sudah dipakai, coba ganti email yang lain",
+              ));
             }
           } catch (e) {
-            emit(ErrorState(message: e.toString()));
+            if (e is AuthException) {
+              emit(RegisterState(
+                isLoading: false,
+                isError: true,
+                message: e.message,
+              ));
+            } else {
+              emit(RegisterState(
+                isLoading: false,
+                isError: true,
+                message: 'Registrasi gagal, coba lagi.',
+              ));
+            }
           }
         }
       } else {
-        emit(ErrorState(message: combinedMessage));
-      }
-    });
-    on<ForgotPasswordEvent>((event, emit) async {
-      emit(LoadingState());
-      try {
-        // Perform login with Firebase
-        // Replace the following line with your Firebase authentication code
-        await authRepository.forgotPassword(event.email);
-        emit(InitialState());
-      } catch (e) {
-        emit(ErrorState(message: 'Registration failed. Please try again.'));
+        emit(RegisterState(
+          isLoading: false,
+          isError: true,
+          message: combinedMessage,
+        ));
       }
     });
   }
-}
 
-//   Stream<AuthState> mapEventToState(AuthEvent event) async* {
-//     if (event is LoginEvent) {
-//       yield LoadingState();
-//       try {
-//         // Perform login with Firebase
-//         // Replace the following line with your Firebase authentication code
-//         final user = await _authRepository.login(event.email, event.password);
-//         yield AuthenticatedState(user);
-//       } catch (e) {
-//         yield ErrorState('Login failed. Please try again.');
-//       }
-//     } else if (event is RegisterEvent) {
-//       yield LoadingState();
-//       try {
-//         // Perform registration with Firebase
-//         // Replace the following line with your Firebase authentication code
-//         final user =
-//             await _authRepository.register(event.email, event.password);
-//         yield AuthenticatedState(user);
-//       } catch (e) {
-//         yield ErrorState('Registration failed. Please try again.');
-//       }
-//     } else if (event is ForgotPasswordEvent) {
-//       yield LoadingState();
-//       try {
-//         // Perform forgot password request with Firebase
-//         // Replace the following line with your Firebase authentication code
-//         await _authRepository.forgotPassword(event.email);
-//         yield InitialState();
-//       } catch (e) {
-//         yield ErrorState('Forgot password failed. Please try again.');
-//       }
-//     }
-//   }
-// }
+  login(String email, String password) {}
+}

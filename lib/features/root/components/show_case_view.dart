@@ -19,17 +19,13 @@ class ShowCaseView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Showcase(
-      key: globalKey,
-      title: title,
-      description: description,
-      descTextStyle: const TextStyle(
-        color: Colors.white,
-        fontSize: 14,
-      ),
-      tooltipPadding: const EdgeInsets.all(8),
-      tooltipBackgroundColor: AppColors.primaryColor,
-      tooltipBorderRadius: BorderRadius.circular(12),
-      child: child,
-    );
+        key: globalKey,
+        title: title,
+        description: description,
+        descTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
+        tooltipPadding: const EdgeInsets.all(8),
+        tooltipBackgroundColor: AppColors.primaryColor,
+        tooltipBorderRadius: BorderRadius.circular(12),
+        child: child);
   }
 }

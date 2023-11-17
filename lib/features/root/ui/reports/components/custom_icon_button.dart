@@ -1,4 +1,3 @@
-import 'package:fin_app/constant/color.dart';
 import 'package:flutter/material.dart';
 
 class CustomIconButton extends StatelessWidget {
@@ -6,7 +5,6 @@ class CustomIconButton extends StatelessWidget {
   final Icon icon;
   final String label;
   final Color? labelColor;
-  final Color? color;
 
   const CustomIconButton({
     super.key,
@@ -14,24 +12,18 @@ class CustomIconButton extends StatelessWidget {
     required this.icon,
     required this.label,
     this.labelColor = Colors.black,
-    this.color = AppColors.primaryColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        IconButton(
-          onPressed: onPressed,
-          icon: icon,
-          color: color,
-          iconSize: 36,
-        ),
-        Text(
-          label,
-          style: TextStyle(color: labelColor),
-        ),
-      ],
-    );
+    return InkWell(
+        onTap: onPressed,
+        child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(children: [
+              icon,
+              const SizedBox(width: 8),
+              Text(label, style: TextStyle(color: labelColor)),
+            ])));
   }
 }

@@ -6,7 +6,9 @@ class ProfileMenuParent extends StatelessWidget {
       achivementOnTap,
       aboutOnTap,
       rateUsOnTap,
-      logoutOnTap;
+      logoutOnTap,
+      downloadOnTap;
+  final String? role;
   const ProfileMenuParent({
     super.key,
     this.settingsOnTap,
@@ -14,44 +16,21 @@ class ProfileMenuParent extends StatelessWidget {
     this.aboutOnTap,
     this.rateUsOnTap,
     this.logoutOnTap,
+    this.downloadOnTap,
+    this.role,
   });
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(32, 50, 32, 32),
-        child: Column(
-          children: [
-            ProfileMenu(
-              onTap: settingsOnTap,
-              label: "Pengaturan akun",
-              icon: Icons.settings_outlined,
-            ),
-            ProfileMenu(
-              onTap: achivementOnTap,
-              label: "Lencana",
-              icon: Icons.military_tech_outlined,
-            ),
-            ProfileMenu(
-              onTap: aboutOnTap,
-              label: "Tentang kami",
-              icon: Icons.error_outline,
-            ),
-            ProfileMenu(
-              onTap: aboutOnTap,
-              label: "Brikan peringkat untuk kami",
-              icon: Icons.star_outline,
-            ),
-            ProfileMenu(
-              onTap: logoutOnTap,
-              label: "Keluar",
-              icon: Icons.logout_outlined,
-              menuColor: Colors.redAccent,
-            ),
-          ],
-        ),
-      ),
-    );
+        child: Container(
+            padding: const EdgeInsets.fromLTRB(32, 50, 32, 32),
+            child: Column(children: [
+              ProfileMenu(
+                  onTap: logoutOnTap,
+                  label: "Keluar",
+                  icon: Icons.logout_outlined,
+                  menuColor: Colors.redAccent)
+            ])));
   }
 }

@@ -1,19 +1,29 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fin_app/features/auth/bloc/auth_bloc.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
-import 'package:fin_app/features/auth/data/models/request/user_models.dart';
-import 'package:fin_app/features/auth/data/models/response/user_response_models.dart';
-import 'package:fin_app/features/root/data/datasources/profile_sources.dart';
+import 'package:fin_app/features/auth/data/models/login_model.dart';
+import 'package:fin_app/features/auth/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:tabler/tabler.dart';
 
 class AuthRepository {
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final ProfileDataSources profileDataSources = ProfileDataSources();
+  final FirebaseAuth auth;
+  final FirebaseFirestore firestore;
+  final FirebaseMessaging firebaseMessaging;
 
-  Future<UserModel?> login(String email, String password) async {
+  AuthRepository({
+    FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+    FirebaseMessaging? firebaseMessaging,
+  })  : auth = auth ?? FirebaseAuth.instance,
+        firestore = firestore ?? FirebaseFirestore.instance,
+        firebaseMessaging = firebaseMessaging ?? FirebaseMessaging.instance;
+
+  Stream<User?> get user => auth.authStateChanges();
+
+  Future<LoginModel?> login(String email, String password) async {
     try {
       final UserCredential userCredential =
           await auth.signInWithEmailAndPassword(
@@ -28,45 +38,47 @@ class AuthRepository {
             await firestore.collection('users').doc(user.uid).get();
 
         if (userSnapshot.exists) {
-          final userResponseModels = UserResponseModels.fromMap(
-              userSnapshot.data() as Map<String, dynamic>);
+          final userModels =
+              UserModel.fromMap(userSnapshot.data() as Map<String, dynamic>);
           final token = await user.getIdToken();
-          final bool isAdmin = userResponseModels.isAdmin ?? false;
+          final String role = userModels.role ?? "reporter";
 
-          await AuthLocalStorage().saveRole(isAdmin);
+          String updatedNotificationTokens =
+              userModels.notificationTokens ?? "";
+
+          final notificationToken = await firebaseMessaging.getToken();
+
+          updatedNotificationTokens = notificationToken!;
+
+          firestore
+              .collection('users')
+              .doc(user.uid)
+              .update({"notificationToken": updatedNotificationTokens});
+
+          await AuthLocalStorage().saveRole(role);
+          await AuthLocalStorage().saveFCMToken(notificationToken);
           await AuthLocalStorage().saveCheckShowcase(false);
 
-          print(isAdmin);
-
-          return UserModel(user.uid, email, token);
+          return LoginModel(user.uid, email, token);
         }
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        throw AuthException(
-            message: 'User not found. Please check your email and try again.');
-      } else if (e.code == 'wrong-password') {
-        throw AuthException(
-            message:
-                'Wrong password. Please check your password and try again.');
-      } else {
-        throw AuthException(
-            message:
-                'Login failed. Please try again.'); // For other Firebase exceptions
-      }
+      print(e.message);
+      throw AuthException(message: e.message);
     } catch (e) {
-      throw AuthException();
+      print(e);
+      throw AuthException(message: e.toString());
     }
 
     throw AuthException();
   }
 
   Future<bool> register(
-    String email,
-    String password,
-    UserResponseModels userResponseModels,
-  ) async {
+      {String? email, String? password, UserModel? userModels}) async {
     try {
+      if (email == null || password == null) {
+        return false;
+      }
       final userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -75,68 +87,71 @@ class AuthRepository {
       final user = userCredential.user;
       final userId = user!.uid;
 
-      final usernameExists =
-          await checkUsernameExists(userResponseModels.username!);
+      final newUserResponseModels = userModels!.copyWith(
+        userId: userId,
+        totalReports: 0,
+        role: "reporter",
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        profilePhotoUrl:
+            'https://upload.wikimedia.org/wikipedia/commons/b/bc/Unknown_person.jpg',
+      );
 
-      if (!usernameExists) {
-        // Username already exists, so return an error message
-        final newUserResponseModels = userResponseModels.copyWith(
-          userId: userId,
-          badges: 0,
-          totalReports: 0,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          isAdmin: false,
-          bio: '',
-          profilePhotoUrl:
-              'https://upload.wikimedia.org/wikipedia/commons/b/bc/Unknown_person.jpg',
-        );
-
+      try {
         await firestore
             .collection('users')
             .doc(userId)
             .set(newUserResponseModels.toMap());
-      } else {
+      } catch (e) {
         return false;
       }
 
       return true;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        throw AuthException(
-            message:
-                'Email already in use. Please change your username and try again.');
-      } else {
-        throw AuthException(
-            message:
-                'Register failed. Please try again.'); // For other Firebase exceptions
-      }
+      throw AuthException(message: e.message);
     } catch (e) {
-      log('Error registering user: $e');
       throw e.toString();
     }
   }
 
-  Future<bool> checkUsernameExists(String username) async {
-    try {
-      final querySnapshot = await firestore
-          .collection('users')
-          .where('username', isEqualTo: username)
-          .limit(1)
-          .get();
+  void loginDebug(LoginModel user) {
+    if (kDebugMode) {
+      final table = Tabler(
+        header: ['Nama Data', 'Response Data'],
+        data: [
+          ['User ID', user.id],
+          ['Email', user.email],
+          ['Token', user.token],
+          ['Role', user.role],
+          ['Notification Token', user.notificationToken],
+        ],
+      );
 
-      return querySnapshot.docs.isNotEmpty;
-    } catch (e) {
-      log('Error checking username existence: $e');
-      throw e.toString();
+      print('Login berhasil dengan data yang didapat:');
+      print(table);
     }
   }
 
-  Future<void> forgotPassword(String email) async {
-    try {
-      await auth.sendPasswordResetEmail(email: email);
-    } catch (e) {
-      log('Error sending password reset email: $e');
+  void registerDebug(UserModel userModels) {
+    if (kDebugMode) {
+      final table = Tabler(
+        header: ['Nama Data', 'Response Data'],
+        data: [
+          ['User ID', userModels.userId],
+          ['Username', userModels.username],
+          ['Email', userModels.email],
+          ['Role', userModels.role],
+          ['Jabatan', userModels.jabatan],
+          ['NIM', userModels.nim],
+          ['Total Reports', userModels.totalReports],
+          ['Created At', userModels.createdAt.toString()],
+          ['Updated At', userModels.updatedAt.toString()],
+          ['Profile Photo URL', userModels.profilePhotoUrl],
+        ],
+      );
+
+      print('Register berhasil dengan data yang didapat:');
+      print(table);
     }
   }
 }

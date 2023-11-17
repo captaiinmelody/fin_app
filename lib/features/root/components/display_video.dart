@@ -22,13 +22,10 @@ class DisplayVideo extends StatefulWidget {
 
 class _DisplayVideoState extends State<DisplayVideo> {
   late VideoPlayerController videoPlayerController;
-
   late ChewieController chewieController;
-
   @override
   void initState() {
     super.initState();
-
     switch (widget.dataSourceType) {
       case DataSourceType.asset:
         videoPlayerController = VideoPlayerController.asset(widget.url);
@@ -44,7 +41,6 @@ class _DisplayVideoState extends State<DisplayVideo> {
         videoPlayerController =
             VideoPlayerController.contentUri(Uri.parse(widget.url));
     }
-
     chewieController = ChewieController(
       videoPlayerController: videoPlayerController,
     );
@@ -59,21 +55,14 @@ class _DisplayVideoState extends State<DisplayVideo> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        SizedBox(
-          height: 200,
-          child: Chewie(controller: chewieController),
-        ),
-        if (widget.onPressed != null)
-          Positioned(
-              top: 0,
-              left: 0,
-              child: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: widget.onPressed,
-              ))
-      ],
-    );
+    return Stack(children: [
+      SizedBox(height: 200, child: Chewie(controller: chewieController)),
+      if (widget.onPressed != null)
+        Positioned(
+            top: 0,
+            left: 0,
+            child: IconButton(
+                icon: const Icon(Icons.close), onPressed: widget.onPressed))
+    ]);
   }
 }

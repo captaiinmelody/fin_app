@@ -2,225 +2,405 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
-import 'package:fin_app/features/root/data/models/leaderboards_models.dart';
+import 'package:fin_app/features/root/data/datasources/debug_function.dart';
+import 'package:fin_app/features/root/data/datasources/notification_sources.dart';
 import 'package:fin_app/features/root/data/models/report_models.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:path/path.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
-class ReportsDataSources {
+class ReportsRepository {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  FirebaseFirestore firestore;
+  DebugFunction debugFunction = DebugFunction();
+  ReportsRepository({
+    FirebaseFirestore? firestore,
+  }) : firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<String> postReports(
-    String? description,
-    File? imageFiles,
-    File? videoFiles,
-    String? kampus,
-    String? detailLokasi,
-  ) async {
+  CollectionReference get collection => firestore.collection('reports');
+
+  //admin service start
+  Future<ReportsModel> getReportsById(String documentId) async {
     try {
-      MediaUrl? mediaUrl;
+      DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+          .collection('reports')
+          .doc(documentId)
+          .get();
 
-      if (imageFiles != null && videoFiles != null) {
-        String imageUrl = await uploadFile(imageFiles);
-        String videoUrl = await uploadFile(videoFiles);
-        mediaUrl = MediaUrl(imageUrl: imageUrl, videoUrl: videoUrl);
-      } else if (imageFiles != null) {
-        String imageUrl = await uploadFile(imageFiles);
-        mediaUrl = MediaUrl(imageUrl: imageUrl);
-      } else if (videoFiles != null) {
-        String videoUrl = await uploadFile(videoFiles);
-        mediaUrl = MediaUrl(videoUrl: videoUrl);
+      ReportsModel reportsModel =
+          ReportsModel.fromMap(docSnapshot.data() as Map<String, dynamic>);
+
+      debugFunction.reportsModelDebug(reportsModel);
+
+      return reportsModel;
+    } catch (e) {
+      print("gagal mwngambil data by reprts id: $e");
+      throw e.toString();
+    }
+  }
+
+  Future<String> reportsConfirmation(
+    String documentId,
+    String status,
+    String? targetRole,
+  ) async {
+    ReportsModel reportsSnapshot = await getReportsById(documentId);
+    String? reportsId = reportsSnapshot.reportsId;
+    String? teknisiNotifToken;
+    String? userNotifToken;
+    String userId = reportsSnapshot.userData!.userId!;
+    DocumentSnapshot userSnapshot =
+        await firestore.collection("users").doc(userId).get();
+    userNotifToken = userSnapshot.get('notificationToken');
+    String teknisiId = targetRole == "krt_kampus_1"
+        ? "18EYE6amrDfKnSwE1eVMkKtx2Ev2"
+        : targetRole == "krt_kampus_2"
+            ? "iuceH3NLnsSpqfUoxMXNSzXZ4mM2"
+            : targetRole == "krt_kampus_3"
+                ? "7uqAy9nIkUhMoZNfotpwYHgV0TY2"
+                : targetRole == "krt_kampus_4"
+                    ? "1SjYYIEmT0NGvlBdtyhET0I7xdB2"
+                    : targetRole == "krt_kampus_5"
+                        ? "lJl5deDhQzYgngun7CNgMzlkaug2"
+                        : "d0mhlSZ3RYZFfGiBoWdpWMON0Uj1";
+    DocumentSnapshot teknisiSnapshot =
+        await firestore.collection("users").doc(teknisiId).get();
+
+    teknisiNotifToken = teknisiSnapshot.get("notificationToken");
+    try {
+      if (status == "rejected") {
+        try {
+          await firestore
+              .collection('reports')
+              .doc(reportsId)
+              .update({'reportsData.status': "rejected"});
+
+          //Take the updated data
+          DocumentSnapshot updatedReportSnapshot =
+              await firestore.collection('reports').doc(reportsId).get();
+
+          final updatedReportsData = ReportsModel.fromMap(
+              updatedReportSnapshot.data() as Map<String, dynamic>);
+
+          debugFunction.reportsModelDebug(updatedReportsData);
+
+          try {
+            await NotificationSources().sendNotification(
+              userNotifToken!,
+              "Laporan Anda Ditolak",
+              'Laporan anda tidak valid',
+              reportsId!,
+              userId,
+            );
+          } catch (e) {
+            print("notifikasi gagal dikirim dengan error: $e");
+            throw e.toString();
+          }
+        } catch (e) {
+          print("Menolak laporan gagal dengan error: $e");
+          throw e.toString();
+        }
+        return "ditolak";
+      } else {
+        try {
+          await firestore
+              .collection('reports')
+              .doc(reportsId)
+              .update({'reportsData.status': "confirmed"});
+          try {
+            await NotificationSources().sendNotification(
+              teknisiNotifToken!,
+              "Tugas Baru",
+              'Ada pekerjaan untuk memperbaiki fasilitas',
+              reportsId!,
+              teknisiId,
+            );
+            await NotificationSources().sendNotification(
+              userNotifToken!,
+              "Laporan Telah Dikonfirmasi",
+              'Laporan anda sudah di konfirmasi dan sedang ditangani',
+              reportsId,
+              userId,
+            );
+          } catch (e) {
+            print("notifikasi gagal dikirim dengan error: $e");
+            throw e.toString();
+          }
+        } catch (e) {
+          print("Konfirmasi Laporan Gagal dengan error: $e");
+          throw e.toString();
+        }
+
+        return "dikonfirmasi";
       }
+    } catch (e) {
+      return "error";
+    }
+  }
 
-      String reportsId = const Uuid().v1();
-      String leaderboardsId = const Uuid().v1();
-      final userId = await AuthLocalStorage().getUserId();
+  Future<String> deleteReports(reportsId) async {
+    try {
+      ReportsModel reportsSnapshot = await getReportsById(reportsId);
+
+      String? userId = reportsSnapshot.userData?.userId;
 
       DocumentSnapshot userSnapshot =
           await firestore.collection('users').doc(userId).get();
+      int currentTotalReports = userSnapshot.get('totalReports');
+      int newTotalReports = currentTotalReports - 1;
 
-      if (userSnapshot.exists) {
-        //username fetch from users collection
-        String username = userSnapshot.get("username");
-        String profilePhotoUrl = userSnapshot.get('profilePhotoUrl');
+      try {
+        await firestore.collection('reports').doc(reportsId).delete();
+        try {
+          await firestore.collection('users').doc(userId).update({
+            'totalReports': newTotalReports,
+            'updatedAt': DateTime.now(),
+          });
+        } catch (e) {
+          print("gagal mengurangi jumlah laporan pada users : $e");
+          return e.toString();
+        }
+      } catch (e) {
+        print("Gagal Menghapus Laporan : $e");
+        return e.toString();
+      }
 
-        ReportsModels reports = ReportsModels(
-          username: username,
+      return 'Laporan berhasil di hapus';
+    } catch (e) {
+      print("Error saat menghapus laporan : $e");
+      throw e.toString();
+    }
+  }
+
+  //admin service end
+
+  //reporter service start
+  Future<String> postReports(
+    String? inputDescription,
+    List<File?>? imageFiles,
+    File? videoFiles,
+    String? campus,
+    String? location,
+  ) async {
+    MediaUrl? mediaUrl;
+
+    if (imageFiles != null && videoFiles != null) {
+      List<String> imageUrls = await uploadFiles(imageFiles);
+      String videoUrl = await uploadFile(videoFiles);
+      mediaUrl = MediaUrl(imageUrls: imageUrls, videoUrl: videoUrl);
+    } else if (imageFiles != null) {
+      List<String> imageUrls = await uploadFiles(imageFiles);
+      mediaUrl = MediaUrl(imageUrls: imageUrls);
+    } else if (videoFiles != null) {
+      String videoUrl = await uploadFile(videoFiles);
+      mediaUrl = MediaUrl(videoUrl: videoUrl);
+    }
+
+    ///data membuat laporan baru
+    String reportsId = const Uuid().v1();
+    final userId = await AuthLocalStorage().getUserId();
+    DocumentSnapshot userSnapshot =
+        await firestore.collection('users').doc(userId).get();
+    if (userSnapshot.exists) {
+      String username = userSnapshot.get("username");
+      String jabatan = userSnapshot.get("jabatan");
+      String profilePhotoUrl = userSnapshot.get('profilePhotoUrl');
+      int currentTotalReports = userSnapshot.get('totalReports') ?? 0;
+      int newTotalReports = currentTotalReports + 1;
+
+      ReportsModel reports = ReportsModel(
+        reportsId: reportsId,
+        userData: UserData(
           userId: userId,
+          username: username,
+          jabatan: jabatan,
           profilePhotoUrl: profilePhotoUrl,
-          reportsId: reportsId,
-          mediaUrl: mediaUrl,
-          description: description,
-          datePublished: DateTime.now(),
-          totalLikes: 0,
-          totalComments: 0,
-          kampus: kampus,
-          detailLokasi: detailLokasi,
-          status: 0,
-        );
+        ),
+        reportsData: ReportsData(
+          reportsDescription: inputDescription,
+          fixedDescription: "",
+          campus: campus,
+          location: location,
+          status: "reported",
+        ),
+        mediaUrl: mediaUrl,
+        datePublished: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
 
-        //totalReports fetch from users collection
-        int currentTotalReports = userSnapshot.get('totalReports') ?? 0;
-        int newTotalReports = currentTotalReports + 1;
+      ///end data laporan baru
 
-        int badges = userSnapshot.get('badges');
+      /// data untuk mengirim notifikasi ke admin
+      String? notificationToken;
+      String? targetId = "EosD1TZy5XZT0vQpSeBl5pokJEn2";
+      DocumentSnapshot targetSnapshot =
+          await firestore.collection("users").doc(targetId).get();
+      notificationToken = targetSnapshot.get("notificationToken");
 
-        await firestore.collection('users').doc(userId).update({
-          'totalReports': newTotalReports,
-          'updatedAt': DateTime.now(),
-        });
+      ///end data admin
 
+      try {
+        ///membuat data laporan baru
         await firestore
             .collection('reports')
             .doc(reportsId)
             .set(reports.toMap());
 
-        //leaderboards models
-        LeaderboardsModels leaderboards = LeaderboardsModels(
-          leaderboardsId: leaderboardsId,
-          userId: userId,
-          profilePhotoUrl: profilePhotoUrl,
-          username: username,
-          badges: badges,
-        );
-
-        //get leaderboard for checkin if there is already userId in the leaderboards collection
-        DocumentSnapshot leaderboardsSnapshot =
-            await firestore.collection('leaderboards').doc(userId).get();
-
-        //post to leaderboards collection
-        if (leaderboardsSnapshot.exists) {
-          return 'leaderboards already exist';
-        } else {
-          await firestore
-              .collection('leaderboards')
-              .doc(userId)
-              .set(leaderboards.toMap());
-        }
-
-        return 'Upload Success';
-      } else {
-        return 'User document not found';
-      }
-    } catch (e) {
-      throw e.toString(); // Return error message as String
-    }
-  }
-
-  Future<String> reportsFixed(String? description, File? imageFiles,
-      File? videoFiles, String reportsId) async {
-    try {
-      MediaUrl? mediaUrl;
-      MediaUrl? existingMediaUrl;
-
-      // Fetch the existing mediaUrl from the Firestore document
-      DocumentSnapshot reportSnapshot =
-          await firestore.collection('reports').doc(reportsId).get();
-      if (reportSnapshot.exists) {
-        existingMediaUrl = MediaUrl.fromMap(reportSnapshot.get('mediaUrl'));
-      }
-
-      if (imageFiles != null && videoFiles != null) {
-        String imageUrl = await uploadFile(imageFiles);
-        String videoUrl = await uploadFile(videoFiles);
-        mediaUrl = MediaUrl(
-          imageUrl: existingMediaUrl?.imageUrl, // Keep the existing imageUrl
-          videoUrl: existingMediaUrl?.videoUrl, // Keep the existing videoUrl
-          fixedImageUrl: imageUrl,
-          fixedVideoUrl: videoUrl,
-        );
-      } else if (imageFiles != null) {
-        String imageUrl = await uploadFile(imageFiles);
-        mediaUrl = MediaUrl(
-          imageUrl: existingMediaUrl?.imageUrl, // Keep the existing imageUrl
-          videoUrl: existingMediaUrl?.videoUrl, // Keep the existing videoUrl
-          fixedImageUrl: imageUrl,
-        );
-      } else if (videoFiles != null) {
-        String videoUrl = await uploadFile(videoFiles);
-        mediaUrl = MediaUrl(
-          imageUrl: existingMediaUrl?.imageUrl, // Keep the existing imageUrl
-          videoUrl: existingMediaUrl?.videoUrl, // Keep the existing videoUrl
-          fixedVideoUrl: videoUrl,
-        );
-      }
-
-      final userId = await AuthLocalStorage().getUserId();
-
-      DocumentSnapshot userSnapshot =
-          await firestore.collection('users').doc(userId).get();
-
-      if (userSnapshot.exists) {
-        int currentBadges = userSnapshot.get('badges');
-        int newBadges = currentBadges + 1;
-
-        await firestore.collection('users').doc(userId).update({
-          'badges': newBadges,
-          'updatedAt': DateTime.now(),
-        });
-
-        await firestore.collection('reports').doc(reportsId).update({
-          'status': 2,
-          'mediaUrl':
-              mediaUrl?.toMap(), // Update the mediaUrl field in the document
-        });
-
-        //get leaderboard for checkin if there is already userId in the leaderboards collection
-        DocumentSnapshot leaderboardsSnapshot =
-            await firestore.collection('leaderboards').doc(userId).get();
-
-        //post to leaderboards collection
-        if (leaderboardsSnapshot.exists) {
-          await firestore.collection('leaderboards').doc(userId).update({
-            'badges': newBadges,
+        ///jika laporan berhasil dibuat maka:
+        try {
+          ///menambahkan total laporan ke data user
+          await firestore.collection('users').doc(userId).update({
+            'totalReports': newTotalReports,
+            'updatedAt': DateTime.now(),
           });
+
+          ///jika berhasil melakukan update user data maka:
+          try {
+            ///mengirim notifikasi ke admin
+            await NotificationSources().sendNotification(
+              notificationToken!,
+              "Laporan Baru",
+              '$username membuat laporan baru di $campus',
+              reportsId,
+              targetId,
+            );
+          } catch (e) {
+            print("Gagar mengirim notifikasi dengan error: $e");
+            return "Gagal mengirimkan notifikasi";
+          }
+          return "Berhasil memperbarui data user dan mengirimkan notifikasi ke admin";
+        } catch (e) {
+          print(
+              "Gagal menambahkan total laporan ke data user dengan error: $e");
+          return e.toString();
         }
-        return 'Upload Success';
-      } else {
-        return 'User document not found';
+      } catch (e) {
+        print("Gagal membuat data laporan baru dengan error: $e");
+        return e.toString();
       }
+    }
+
+    return "Laporan Berhasil dibuat";
+  }
+
+  //reporter services end
+
+  //teknisi services start
+  Future<String> reportsFixConfirmation(
+    String? inputDescription,
+    List<File?>? imageFiles,
+    File? videoFiles,
+    String reportsId,
+  ) async {
+    DocumentSnapshot reportSnapshot =
+        await firestore.collection('reports').doc(reportsId).get();
+    final initialReportsData =
+        ReportsModel.fromMap(reportSnapshot.data() as Map<String, dynamic>);
+
+    debugFunction.reportsModelDebug(initialReportsData);
+
+    Map<String, dynamic>? existingReportsData =
+        initialReportsData.reportsData!.toMap();
+
+    MediaUrl? mediaUrl;
+    MediaUrl? existingMediaUrl;
+    String? adminNotifToken;
+    String? userNotifToken;
+    String adminId = "EosD1TZy5XZT0vQpSeBl5pokJEn2";
+    String userId = initialReportsData.userData!.userId!;
+
+    DocumentSnapshot targetSnapshot =
+        await firestore.collection("users").doc(adminId).get();
+    DocumentSnapshot userSnapshot =
+        await firestore.collection("users").doc(userId).get();
+
+    adminNotifToken = targetSnapshot.get("notificationToken");
+    userNotifToken = userSnapshot.get("notificationToken");
+
+    existingReportsData['fixedDescription'] = inputDescription;
+    existingReportsData['status'] = 'fixed';
+
+    if (reportSnapshot.exists) {
+      existingMediaUrl = MediaUrl.fromMap(reportSnapshot.get('mediaUrl'));
+    }
+    if (imageFiles != null && videoFiles != null) {
+      List<String> imageUrl = await uploadFiles(imageFiles);
+      String videoUrl = await uploadFile(videoFiles);
+      mediaUrl = MediaUrl(
+        imageUrls: existingMediaUrl?.imageUrls,
+        videoUrl: existingMediaUrl?.videoUrl,
+        fixedImageUrls: imageUrl,
+        fixedVideoUrl: videoUrl,
+      );
+    } else if (imageFiles != null) {
+      List<String> imageUrls = await uploadFiles(imageFiles);
+      mediaUrl = MediaUrl(
+        imageUrls: existingMediaUrl?.imageUrls,
+        videoUrl: existingMediaUrl?.videoUrl,
+        fixedImageUrls: imageUrls,
+      );
+    } else if (videoFiles != null) {
+      String videoUrl = await uploadFile(videoFiles);
+      mediaUrl = MediaUrl(
+        imageUrls: existingMediaUrl?.imageUrls,
+        videoUrl: existingMediaUrl?.videoUrl,
+        fixedVideoUrl: videoUrl,
+      );
+    }
+
+    try {
+      await firestore.collection('reports').doc(reportsId).update({
+        'reportsData': existingReportsData,
+        'mediaUrl': mediaUrl?.toMap(),
+        'updatedAt': DateTime.now()
+      });
+
+      ///Take the updated data
+      DocumentSnapshot updatedReportSnapshot =
+          await firestore.collection('reports').doc(reportsId).get();
+
+      final updatedReportsData = ReportsModel.fromMap(
+          updatedReportSnapshot.data() as Map<String, dynamic>);
+
+      debugFunction.reportsModelDebug(updatedReportsData);
+
+      try {
+        /// notifikasi untuk admin atau teknisi
+        await NotificationSources().sendNotification(
+          adminNotifToken!,
+          "Fasilitas Telah Diperbaiki",
+          'KRT Sudah melakukan perbaikan',
+          reportsId,
+          adminId,
+        );
+
+        /// notifikasi untuk user
+        await NotificationSources().sendNotification(
+          userNotifToken!,
+          "Laporan Selesai",
+          'Fasilitas yang anda laporkan sudah diperbaiki',
+          reportsId,
+          userId,
+        );
+      } catch (e) {
+        print("Gagal mengirim notifikasi dengan error: $e");
+        return e.toString();
+      }
+
+      return "Berhasil mengirim data dan notifikasi";
     } catch (e) {
-      print("$e");
-      throw e.toString(); // Return error message as String
+      print("Error saat update laporan ke Firestore : $e");
+      throw e.toString();
     }
   }
 
-  Future<int> updateInt(String reportsId, String counter) async {
-    final userId = await AuthLocalStorage().getUserId();
+  //teknisi services end
 
-    DocumentSnapshot getReports =
-        await firestore.collection('reports').doc(reportsId).get();
-    final currentCounter = getReports.get(counter);
-    final newCounter = currentCounter + 1;
-
-    DocumentSnapshot getLeaderboards =
-        await firestore.collection('leaderboards').doc(userId).get();
-    final currentBadges = getLeaderboards.get('badges');
-    final newBadges = currentBadges + 1;
-
-    await firestore
-        .collection('reports')
-        .doc(reportsId)
-        .update({counter: newCounter});
-
-    await firestore
-        .collection('leaderboards')
-        .doc(userId)
-        .update({'badges': newBadges});
-
-    return newCounter;
-  }
-
+  //uploading service start
   Future<String> uploadFile(File file) async {
-    String fileName = basename(file.path);
-    Reference ref;
-
+    String fileName = p.basename(file.path);
     String extention = file.path.toLowerCase();
+    Reference ref;
 
     if (extention.endsWith('.mp4') ||
         extention.endsWith('.mov') ||
@@ -230,100 +410,122 @@ class ReportsDataSources {
       ref = firebaseStorage.ref().child('reports/images/$fileName');
     }
 
-    UploadTask task = ref.putFile(file);
-    TaskSnapshot snapshot = await task.whenComplete(() => null);
-    final downloadURL = await snapshot.ref.getDownloadURL();
+    try {
+      UploadTask task = ref.putFile(file);
+      TaskSnapshot snapshot = await task.whenComplete(() => null);
+      final fileURL = await snapshot.ref.getDownloadURL();
 
-    return downloadURL;
+      print("Upload file berhasil, URL File: $fileURL");
+
+      return fileURL;
+    } catch (e) {
+      print("Error saat upload file ke Firebase Storage : $e");
+      return e.toString();
+    }
   }
 
-  Future<List<ReportsModels>> getReports() async {
+  Future<List<String>> uploadFiles(List<File?> files) async {
+    List<String> urls = [];
+
+    for (final file in files) {
+      String url = await uploadFile(file!);
+      urls.add(url);
+    }
+
+    return urls;
+  }
+
+  //uploading services end
+
+  //fetching reports data start
+  Future<List<ReportsModel>> getAllReports() async {
     try {
       final QuerySnapshot snapshot =
           await firestore.collection('reports').get();
 
-      final List<ReportsModels> reportsModels = snapshot.docs.map((doc) {
+      final List<ReportsModel> reportsModels = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        return ReportsModels.fromMap(data);
+        return ReportsModel.fromMap(data);
       }).toList();
 
-      // Sort the reportsModels list by the newest datePublished
       reportsModels
           .sort((a, b) => b.datePublished!.compareTo(a.datePublished!));
 
+      debugFunction.listReportsModelDebug(reportsModels, "all");
       return reportsModels;
     } catch (e) {
-      print('Error fetching ReportsModels: $e');
+      print('Error fetching all reports data: $e');
       throw Exception("Failed to fetch ReportsModels");
     }
   }
 
-  Future<ReportsModels> getFixedReports(String reportsId) async {
+  Future<List<ReportsModel>> getReportsByCampus(String campus) async {
     try {
-      final DocumentSnapshot snapshot =
-          await firestore.collection('fixed_reports').doc(reportsId).get();
+      final QuerySnapshot snapshot = await firestore
+          .collection('reports')
+          .where('reportsData.campus', isEqualTo: campus)
+          .get();
 
-      return ReportsModels.fromMap(snapshot.data() as Map<String, dynamic>);
+      final List<ReportsModel> reportsModels = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return ReportsModel.fromMap(data);
+      }).toList();
+
+      reportsModels
+          .sort((a, b) => b.datePublished!.compareTo(a.datePublished!));
+
+      debugFunction.listReportsModelDebug(reportsModels, "teknisi",
+          campus: campus);
+
+      return reportsModels;
     } catch (e) {
+      print('Error fetching reports by campus: $e');
       throw Exception("Failed to fetch ReportsModels");
     }
   }
 
-  Future<List<ReportsModels>> getReportsByUserId() async {
+  Future<List<ReportsModel>> getReportsByReporterId() async {
     try {
       final userId = await AuthLocalStorage().getUserId();
 
       final QuerySnapshot snapshot = await firestore
           .collection('reports')
-          .where('userId', isEqualTo: userId)
+          .where('userData.userId', isEqualTo: userId)
           .get();
 
-      final List<ReportsModels> reportsModels = snapshot.docs.map((doc) {
+      final List<ReportsModel> reportsModels = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        return ReportsModels.fromMap(data);
+        return ReportsModel.fromMap(data);
       }).toList();
 
-      // Sort the reportsModels list by the newest datePublished
       reportsModels
           .sort((a, b) => b.datePublished!.compareTo(a.datePublished!));
 
+      String username = reportsModels.first.userData!.username!;
+
+      debugFunction.listReportsModelDebug(reportsModels, "pelapor",
+          username: username);
       return reportsModels;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching ReportsModels: $e');
-      }
+      print('Error fetching reports by reporter id: $e');
       throw Exception("Failed to fetch ReportsModels");
     }
   }
 
-  Future<Position> getCurrentLocation() async {
-    // Check if location services are enabled
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled
-      bool permissionRequested = await Geolocator.openLocationSettings();
-      if (!permissionRequested) {
-        // The user declined to enable location services
-        throw 'Location service are disabled';
-      }
+  Future<ReportsModel> getReportsDetail(reportsId) async {
+    try {
+      final response =
+          await firestore.collection('reports').doc(reportsId).get();
+
+      final reportsData =
+          ReportsModel.fromMap(response.data() as Map<String, dynamic>);
+
+      return reportsData;
+    } catch (e) {
+      print(e);
+      throw Exception("Failed to fetch ReportsModels");
     }
-
-    // Check if the app has permission to access the location
-    PermissionStatus permissionStatus =
-        await Permission.locationWhenInUse.status;
-    if (permissionStatus.isDenied) {
-      // Permission has not been granted
-      permissionStatus = await Permission.locationWhenInUse.request();
-      if (permissionStatus != PermissionStatus.granted) {
-        // Permission has been denied by the user
-        throw 'Location permission has been denied';
-      }
-    }
-
-    // Get the current position
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-
-    return position;
   }
+
+  //fetching reports data end
 }

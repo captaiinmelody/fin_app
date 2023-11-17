@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
-import 'package:fin_app/features/auth/data/models/response/user_response_models.dart';
+import 'package:fin_app/features/auth/data/models/user_model.dart';
 
 import 'package:flutter/foundation.dart';
 
 class ProfileDataSources {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Future<UserResponseModels> fetchUserData() async {
+  Future<UserModel> fetchUserData() async {
     CollectionReference usersRef =
         FirebaseFirestore.instance.collection('users');
 
@@ -22,7 +22,7 @@ class ProfileDataSources {
             documentSnapshot.data() as Map<String, dynamic>;
 
         // Create a UserResponseModels object from the data
-        UserResponseModels userResponse = UserResponseModels.fromMap(data);
+        UserModel userResponse = UserModel.fromMap(data);
 
         if (kDebugMode) {
           print(userResponse.username);

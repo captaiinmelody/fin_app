@@ -7,6 +7,12 @@ class AuthLocalStorage {
     return token;
   }
 
+  Future<String> saveFCMToken(String fcmToken) async {
+    final pref = await SharedPreferences.getInstance();
+    await pref.setString('token', fcmToken);
+    return fcmToken;
+  }
+
   Future<String> saveUserId(String userId) async {
     final pref = await SharedPreferences.getInstance();
     await pref.setString("userId", userId);
@@ -14,15 +20,25 @@ class AuthLocalStorage {
     return userId;
   }
 
-  Future<bool> saveRole(bool role) async {
+  Future<String> saveRole(String role) async {
     final pref = await SharedPreferences.getInstance();
-    await pref.setBool('role', role);
+    await pref.setString('role', role);
     return role;
+  }
+
+  Future<String> getRole() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.getString("role")!;
   }
 
   Future<String> getToken() async {
     final pref = await SharedPreferences.getInstance();
     return pref.getString('token')!;
+  }
+
+  Future<String> getFCMToken() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.getString('fcmToken')!;
   }
 
   Future<String> getUserId() async {

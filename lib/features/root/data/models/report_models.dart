@@ -5,29 +5,100 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 @immutable
+class UserData {
+  final String? userId, username, jabatan, profilePhotoUrl;
+
+  const UserData({
+    this.userId,
+    this.username,
+    this.jabatan,
+    this.profilePhotoUrl,
+  });
+
+  factory UserData.fromMap(Map<String, dynamic> data) => UserData(
+        userId: data['userId'] as String? ?? "",
+        username: data['username'] as String? ?? "",
+        jabatan: data['jabatan'] as String? ?? "",
+        profilePhotoUrl: data['profilePhotoUrl'] as String? ?? "",
+      );
+
+  Map<String, dynamic> toMap() => {
+        'userId': userId,
+        'username': username,
+        'jabatan': jabatan,
+        'profilePhotoUrl': profilePhotoUrl,
+      };
+
+  factory UserData.fromJson(String data) {
+    return UserData.fromMap(json.decode(data) as Map<String, dynamic>);
+  }
+
+  String toJson() => json.encode(toMap());
+}
+
+@immutable
+class ReportsData {
+  final String? campus, location, status;
+  final String? reportsDescription, fixedDescription;
+
+  const ReportsData({
+    this.campus,
+    this.location,
+    this.status,
+    this.reportsDescription,
+    this.fixedDescription,
+  });
+
+  factory ReportsData.fromMap(Map<String, dynamic> data) => ReportsData(
+        campus: data['campus'] as String? ?? "",
+        location: data['location'] as String? ?? "",
+        status: data['status'] as String? ?? "",
+        reportsDescription: data['reportsDescription'] as String? ?? "",
+        fixedDescription: data['fixedDescription'] as String? ?? "",
+      );
+
+  Map<String, dynamic> toMap() => {
+        'reportsDescription': reportsDescription,
+        'fixedDescription': fixedDescription,
+        'campus': campus,
+        'location': location,
+        'status': status,
+      };
+
+  factory ReportsData.fromJson(String data) {
+    return ReportsData.fromMap(json.decode(data) as Map<String, dynamic>);
+  }
+
+  String toJson() => json.encode(toMap());
+}
+
+@immutable
 class MediaUrl {
-  final String? imageUrl;
-  final String? videoUrl;
-  final String? fixedImageUrl, fixedVideoUrl;
+  final List<String?>? imageUrls, fixedImageUrls;
+  final String? videoUrl, fixedVideoUrl;
 
   const MediaUrl({
-    this.imageUrl,
+    this.imageUrls,
     this.videoUrl,
-    this.fixedImageUrl,
+    this.fixedImageUrls,
     this.fixedVideoUrl,
   });
 
   factory MediaUrl.fromMap(Map<String, dynamic> data) => MediaUrl(
-        imageUrl: data['imageUrl'] as String? ?? '',
+        imageUrls: data['imageUrls'] == null
+            ? null
+            : List<String>.from(data['imageUrls']),
         videoUrl: data['videoUrl'] as String? ?? '',
-        fixedImageUrl: data['fixedImageUrl'] as String? ?? '',
+        fixedImageUrls: data['fixedImageUrls'] == null
+            ? null
+            : List<String>.from(data['fixedImageUrls']),
         fixedVideoUrl: data["fixedVideoUrl"] as String? ?? '',
       );
 
   Map<String, dynamic> toMap() => {
-        'imageUrl': imageUrl,
+        'imageUrls': imageUrls,
         'videoUrl': videoUrl,
-        'fixedImageUrl': fixedImageUrl,
+        'fixedImageUrls': fixedImageUrls,
         'fixedVideoUrl': fixedVideoUrl,
       };
 
@@ -44,11 +115,14 @@ class MediaUrl {
   String toJson() => json.encode(toMap());
 
   MediaUrl copyWith(
-      {String? imageUrl, videoUrl, fixedImageUrl, fixedVideoUrl}) {
+      {List<String?>? imageUrls,
+      videoUrl,
+      List<String?>? fixedImageUrls,
+      fixedVideoUrl}) {
     return MediaUrl(
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageUrls: imageUrls ?? this.imageUrls,
       videoUrl: videoUrl ?? this.videoUrl,
-      fixedImageUrl: fixedImageUrl ?? this.fixedImageUrl,
+      fixedImageUrls: fixedImageUrls ?? this.fixedImageUrls,
       fixedVideoUrl: fixedVideoUrl ?? this.fixedVideoUrl,
     );
   }
@@ -62,127 +136,75 @@ class MediaUrl {
   }
 
   @override
-  int get hashCode => imageUrl.hashCode ^ videoUrl.hashCode;
+  int get hashCode => imageUrls.hashCode ^ videoUrl.hashCode;
 }
 
 @immutable
-class ReportsModels {
-  final String? userId;
+class ReportsModel {
   final String? reportsId;
-  final String? username;
-  final String? profilePhotoUrl;
+  final UserData? userData;
+  final ReportsData? reportsData;
   final MediaUrl? mediaUrl;
-  final String? description;
-  final DateTime? datePublished;
-  final int? totalLikes;
-  final int? totalComments;
-  // final GeoPoint? location;
-  final String? kampus;
-  final String? detailLokasi;
-  final int? status;
+  final DateTime? datePublished, updatedAt;
 
-  const ReportsModels({
-    this.userId,
-    this.username,
-    this.profilePhotoUrl,
-    this.mediaUrl,
+  const ReportsModel({
     this.reportsId,
-    this.description,
+    this.userData,
+    this.reportsData,
+    this.mediaUrl,
     this.datePublished,
-    this.totalLikes,
-    this.totalComments,
-    // this.location,
-    this.kampus,
-    this.detailLokasi,
-    this.status,
+    this.updatedAt,
   });
 
-  ReportsModels copyWith({
-    String? userId,
-    String? username,
+  ReportsModel copyWith({
     String? reportsId,
-    String? profilePhotoUrl,
+    UserData? userData,
+    ReportsData? reportsData,
     MediaUrl? mediaUrl,
-    String? description,
     DateTime? datePublished,
-    int? totalLikes,
-    int? totalComments,
-    // GeoPoint? location,
-    String? kampus,
-    String? detailLokasi,
-    int? status,
+    DateTime? updatedAt,
   }) {
-    return ReportsModels(
-        userId: userId ?? this.userId,
-        username: username ?? this.username,
-        reportsId: reportsId ?? this.reportsId,
-        mediaUrl: mediaUrl ?? this.mediaUrl,
-        profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
-        description: description ?? this.description,
-        datePublished: datePublished ?? this.datePublished,
-        totalLikes: totalLikes ?? this.totalLikes,
-        totalComments: totalComments ?? this.totalComments,
-        // location: location ?? this.location,
-        kampus: kampus ?? this.kampus,
-        detailLokasi: detailLokasi ?? this.detailLokasi,
-        status: status ?? this.status);
+    return ReportsModel(
+      reportsId: reportsId ?? this.reportsId,
+      userData: userData ?? this.userData,
+      reportsData: reportsData ?? this.reportsData,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      datePublished: datePublished ?? this.datePublished,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  factory ReportsModels.fromMap(Map<String, dynamic> data) {
-    return ReportsModels(
-      userId: data['userId'],
-      username: data['username'],
-      reportsId: data['reportsId'],
+  factory ReportsModel.fromMap(Map<String, dynamic> data) {
+    return ReportsModel(
+      reportsId: data['reportsId'] as String? ?? "",
+      userData:
+          data['userData'] == null ? null : UserData.fromMap(data['userData']),
+      reportsData: data['reportsData'] == null
+          ? null
+          : ReportsData.fromMap(data['reportsData']),
       mediaUrl:
           data['mediaUrl'] == null ? null : MediaUrl.fromMap(data['mediaUrl']),
-      profilePhotoUrl: data['profilePhotoUrl'],
-      description: data['description'],
       datePublished: data['datePublished'] == null
           ? null
           : (data['datePublished'] as Timestamp).toDate(),
-      totalLikes: data['totalLikes'] ?? 0,
-      totalComments: data['totalComments'] ?? 0,
-      kampus: data['kampus'] ?? '',
-      detailLokasi: data['detailLokasi'] ?? '',
-      status: data['status'] ?? 0,
+      updatedAt: data['updatedAt'] == null
+          ? null
+          : (data['updatedAt'] as Timestamp).toDate(),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'userId': userId,
-        'username': username,
         'reportsId': reportsId,
+        'userData': userData?.toMap(),
+        'reportsData': reportsData?.toMap(),
         'mediaUrl': mediaUrl?.toMap(),
-        'profilePhotoUrl': profilePhotoUrl,
-        'description': description,
         'datePublished': datePublished,
-        'totalLikes': totalLikes,
-        'totalComments': totalComments,
-        // 'location': location,
-        'kampus': kampus,
-        'detailLokasi': detailLokasi,
-        'status': status,
+        'updatedAt': updatedAt,
       };
 
-  factory ReportsModels.fromJson(String data) {
-    return ReportsModels.fromMap(json.decode(data) as Map<String, dynamic>);
+  factory ReportsModel.fromJson(String data) {
+    return ReportsModel.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
   String toJson() => json.encode(toMap());
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    if (other is! ReportsModels) return false;
-    final mapEquals = const DeepCollectionEquality().equals;
-    return mapEquals(other.toMap(), toMap());
-  }
-
-  @override
-  int get hashCode =>
-      reportsId.hashCode ^
-      description.hashCode ^
-      datePublished.hashCode ^
-      totalLikes.hashCode ^
-      totalComments.hashCode;
 }

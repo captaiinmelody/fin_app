@@ -1,0 +1,41 @@
+ListView.builder(
+  itemCount: state.listOfReportsModels!.length,
+  itemBuilder: (context, index) {
+    ReportsModels content =
+        state.listOfReportsModels![index];
+    int totalLikes = content.totalLikes!;
+    int totalComments = content.totalComments!;
+    state.listOfReportsModels?.sort((a, b) =>
+        b.datePublished!.compareTo(a.datePublished!));
+    return Column(children: [
+      ReportsCard(
+          username: content.username,
+          profilePhotoUrl: content.profilePhotoUrl,
+          location: content.kampus,
+          detailLocation: content.detailLokasi,
+          reportsDescription: content.description,
+          imageUrl: content.mediaUrl?.imageUrl,
+          videoUrl: content.mediaUrl?.videoUrl,
+          fixedImageUrl: content.mediaUrl?.fixedImageUrl,
+          fixedVideoUrl: content.mediaUrl?.fixedVideoUrl,
+          totalLikes: totalLikes,
+          totalComments: totalComments,
+          updatedDate: content.updatedAt,
+          status: content.status,
+          viewImage: () {
+            showGeneralDialog(
+                context: context,
+                pageBuilder: (context, animation,
+                    secondaryAnimation) {
+                  return DisplayImage(
+                      url: content.mediaUrl!.imageUrl!,
+                      dataSourceType:
+                          DataSourceType.network,
+                      onPressed: () {
+                        GoRouter.of(context).pop();
+                      });
+                });
+          }),
+      const Divider()
+    ]);
+  });

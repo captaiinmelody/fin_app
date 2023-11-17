@@ -1,11 +1,11 @@
 import 'package:fin_app/constant/color.dart';
 import 'package:fin_app/features/auth/data/localresources/auth_local_storage.dart';
-import 'package:fin_app/features/root/bloc/root_bloc.dart';
 import 'package:fin_app/features/root/components/show_case_view.dart';
 import 'package:fin_app/features/root/data/localstorage/root_local_storage.dart';
 import 'package:fin_app/features/root/ui/reports/pages/reports_page.dart';
 import 'package:fin_app/routes/route_config.dart';
 import 'package:fin_app/routes/route_const.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -20,19 +20,12 @@ class RootPage extends StatefulWidget {
 }
 
 class _RootPageState extends State<RootPage> {
-  final RootBloc rootBloc = RootBloc(
-    adminReportsDataSources,
-    reportsDataSources,
-    leaderboardSources,
-    profileDataSources,
-  );
-
   List routerName = [
     MyRouterConstant.homeRouterName,
     MyRouterConstant.profileRouterName,
   ];
 
-  bool? currentIsAdmin;
+  String? currentRole;
   bool? showcaseCompleted;
 
   Future<void> initRoleData() async {
@@ -42,9 +35,9 @@ class _RootPageState extends State<RootPage> {
   }
 
   getRole() async {
-    final isAdmin = await AuthLocalStorage().isRoleAdmin();
+    final role = await AuthLocalStorage().getRole();
     setState(() {
-      currentIsAdmin = isAdmin;
+      currentRole = role;
     });
   }
 
@@ -71,6 +64,7 @@ class _RootPageState extends State<RootPage> {
     await Permission.storage.request();
     await Permission.microphone.request();
     await Permission.location.request();
+    await FirebaseMessaging.instance.requestPermission();
   }
 
   @override
@@ -80,10 +74,9 @@ class _RootPageState extends State<RootPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: widget.child,
-      floatingActionButton: currentIsAdmin == false
+      floatingActionButton: currentRole == "reporter"
           ? ShowCaseView(
               globalKey: key2,
               description: 'Tekan tombol ini untuk membuat laporan',
@@ -95,14 +88,13 @@ class _RootPageState extends State<RootPage> {
                         builder: (BuildContext context) {
                           return ShowCaseWidget(
                             onFinish: () async {
-                              final agus = await RootLocalStorgae()
+                              await RootLocalStorgae()
                                   .reportsPageShowCase(true);
-                              debugPrint(agus.toString());
                             },
                             builder: Builder(builder: (context) {
                               return ReportsPage(
                                 rootBloc: rootBloc,
-                                isAdmin: false,
+                                role: "reporter",
                                 reportsId: '',
                               );
                             }),
@@ -125,7 +117,8 @@ class _RootPageState extends State<RootPage> {
       resizeToAvoidBottomInset: false,
       bottomNavigationBar: ShowCaseView(
         globalKey: key1,
-        description: 'Klik icon di bawah ini untuk berpindah halaman',
+        description:
+            'Beranda untuk menampilkan keseluruhan laporan\nLaporan berisikan data pelaporan berdasarkan status\nProfile merupakan halaman informasi pengguna',
         child: Builder(builder: (context) {
           return BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
@@ -141,10 +134,6 @@ class _RootPageState extends State<RootPage> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.report),
                 label: 'Laporan',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.bar_chart),
-                label: 'Peringkat',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person),
@@ -165,11 +154,8 @@ class _RootPageState extends State<RootPage> {
     if (location == '/my-reports') {
       return 1;
     }
-    if (location == '/leaderboards') {
-      return 2;
-    }
     if (location == '/profile') {
-      return 3;
+      return 2;
     }
     return 0;
   }
@@ -183,9 +169,6 @@ class _RootPageState extends State<RootPage> {
         GoRouter.of(context).goNamed(MyRouterConstant.myReportsRouterName);
         break;
       case 2:
-        GoRouter.of(context).goNamed(MyRouterConstant.leaderboardsRouterName);
-        break;
-      case 3:
         GoRouter.of(context).goNamed(MyRouterConstant.profileRouterName);
         break;
     }
